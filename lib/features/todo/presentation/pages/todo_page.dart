@@ -6,6 +6,7 @@ import '../bloc/todo_state.dart';
 import '../widgets/inline_nlp_input.dart';
 import '../widgets/filter_bar.dart';
 import '../widgets/task_row.dart';
+import '../../../navigation_hub/presentation/widgets/navigation_hub_drawer.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -25,6 +26,7 @@ class _TodoPageState extends State<TodoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF000000),
+      drawer: const NavigationHubDrawer(),
       appBar: AppBar(
         backgroundColor: const Color(0xFF000000),
         elevation: 0,

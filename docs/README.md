@@ -14,8 +14,8 @@ Welcome to the documentation vault for **Aizen**, a massive, local-first product
 ## Active Modules
 - **[Stopwatch Module](features/stopwatch.md) (v1.0.0)**: Our reference module showcasing high-precision centisecond ticking, background persistence, and custom tabular figure alignment.
 - **[Device Info Module](features/device_info.md) (v1.2.0)**: System dashboard displaying deep hardware specs, real-time battery status streams, and custom segmented storage breakdowns.
-- **[Quick Tasks (Todo) Module](features/todo.md) (v1.3.0)**: High-density minimalist task manager with local NLP parsing, slide gestures, and subtask hierarchy.
-- **[Unified Navigation Workspace](features/navigation_hub.md) (v1.4.0)**: Central drawer managing route filtering and accordion categories for 50+ modules.
+- **[Quick Tasks (Todo) Module](features/todo.md) (v1.4.1)**: High-density minimalist task manager with local NLP parsing, manual clock time selection fallbacks, slide gestures, and inline task editing dialogs.
+- **[Unified Navigation Workspace](features/navigation_hub.md) (v1.4.1)**: Central drawer managing route filtering and accordion categories for 50+ modules with nested Scaffold support.
 - **[Advanced Settings Hub](features/settings.md) (v1.4.0)**: Controls themes, permission diagnostics, cache compaction, and JSON imports/exports.
 - **[Focus Guardian Engine](features/focus_guardian.md) (v1.4.0)**: Native Android overlay projection and background app blocking.
 

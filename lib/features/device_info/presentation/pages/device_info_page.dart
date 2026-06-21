@@ -9,6 +9,7 @@ import '../../domain/entities/storage_info.dart';
 import '../widgets/battery_info_panel.dart';
 import '../widgets/hardware_info_panel.dart';
 import '../widgets/storage_info_panel.dart';
+import '../../../navigation_hub/presentation/widgets/navigation_hub_drawer.dart';
 
 class DeviceInfoPage extends StatefulWidget {
   const DeviceInfoPage({super.key});
@@ -34,6 +35,7 @@ class _DeviceInfoPageState extends State<DeviceInfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF000000),
+      drawer: const NavigationHubDrawer(),
       appBar: AppBar(
         backgroundColor: const Color(0xFF000000),
         elevation: 0,

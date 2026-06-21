@@ -82,14 +82,15 @@ docker run -d -p 8080:80 blackstart-labs/aizen:latest
 - **Segmented Storage Graph**: Custom multi-segment UI progress indicator showing Used (violet) and Free (green) storage breakdowns in GBs.
 - **Detailed Docs**: Refer to [Device Info Module Specifications](docs/features/device_info.md).
 
-### 3. Quick Tasks (Todo) Module (v1.3.0)
-- **Inline NLP Parser**: Instantly parses priorities (`!!1` to `!!4`), tags (`#tag`), and dates/times (`today`, `tomorrow`, `monday at 5pm`) as the user types, using a high-performance pure-Dart regex algorithm.
+### 3. Quick Tasks (Todo) Module (v1.4.1)
+- **Inline NLP & Clock Fallback**: Instantly parses priorities (`!!1` to `!!4`), tags (`#tag`), and dates/times as the user types, with a secondary fallback Clock Picker to set exact date/time.
+- **Interactive Editing**: Inline Material 3 dark edit dialogs triggered via tap or edit button to update title, priority, date/time, and tags.
 - **AMOLED Dark Layout**: Space-efficient compact rows with left priority color borders and nested subtask tree elements.
 - **Gestural Interactivity**: Slide right to complete or slide left to delete, coupled with reactive sorting.
 - **Detailed Docs**: Refer to [Quick Tasks Module Specifications](docs/features/todo.md).
 
-### 4. Unified Navigation Workspace & Settings Hub (v1.4.0)
-- **Command Palette Sidebar**: Search-enabled drawer to filter and launch 50+ active modules in real-time.
+### 4. Unified Navigation Workspace & Settings Hub (v1.4.1)
+- **Command Palette Sidebar**: Search-enabled drawer to filter and launch 50+ active modules in real-time. Supports opening menu from nested child Scaffolds.
 - **Collapsible Category Accordions**: Flat visual node tree representation using a single optimized `ListView.builder` for O(1) layout rendering and lazy resource usage.
 - **Diagnostics Panel**: Diagnostics checks for system-level overlay and usage statistics permissions, complete with simulated native intent triggers.
 - **Database Compaction**: Performance controls to purge cache directories, optimize db models, and export/import configuration payloads.

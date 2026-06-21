@@ -6,6 +6,7 @@ import '../bloc/stopwatch_state.dart';
 import '../widgets/control_buttons.dart';
 import '../widgets/lap_list_panel.dart';
 import '../widgets/stopwatch_timer_display.dart';
+import '../../../navigation_hub/presentation/widgets/navigation_hub_drawer.dart';
 
 class StopwatchPage extends StatefulWidget {
   const StopwatchPage({super.key});
@@ -25,6 +26,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF000000), // AMOLED Pure Black
+      drawer: const NavigationHubDrawer(),
       appBar: AppBar(
         backgroundColor: const Color(0xFF000000),
         elevation: 0,
