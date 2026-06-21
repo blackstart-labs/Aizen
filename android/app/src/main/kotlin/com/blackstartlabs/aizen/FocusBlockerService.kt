@@ -23,6 +23,7 @@ import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import java.util.Timer
 import java.util.TimerTask
+import android.widget.Toast
 
 class FocusBlockerService : Service() {
 
@@ -109,25 +110,42 @@ class FocusBlockerService : Service() {
     }
 
     private fun checkForegroundApp() {
-        val currentApp = getForegroundPackageName() ?: return
+        try {
+            val currentApp = getForegroundPackageName() ?: return
 
-        mainHandler.post {
-            val isBlacklisted = blacklistPackages.contains(currentApp)
-            if (isBlacklisted) {
-                // Check failsafe: 60 minutes lockout maximum limit
-                if (isOverlayShown) {
-                    val duration = System.currentTimeMillis() - overlayShownTime
-                    if (duration > 60 * 60 * 1000) { // 60 minutes
-                        Log.w(TAG, "60-minute failsafe triggered: removing overlay lockout.")
+            mainHandler.post {
+                try {
+                    val isBlacklisted = blacklistPackages.contains(currentApp)
+                    if (isBlacklisted) {
+                        showOverlay()
+                    } else {
                         removeOverlay()
-                        return@post
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error processing package check callback: ${e.message}", e)
+                    triggerFailsafeSafetyReset()
                 }
-                showOverlay()
-            } else {
-                removeOverlay()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking foreground app package: ${e.message}", e)
+            mainHandler.post {
+                triggerFailsafeSafetyReset()
             }
         }
+    }
+
+    private fun triggerFailsafeSafetyReset() {
+        try {
+            Toast.makeText(
+                this,
+                "Focus guardian failsafe triggered: clearing all restricted apps for safety.",
+                Toast.LENGTH_LONG
+            ).show()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to display failsafe Toast: ${e.message}")
+        }
+        blacklistPackages = emptyList()
+        removeOverlay()
     }
 
     private fun getForegroundPackageName(): String? {
@@ -193,6 +211,7 @@ class FocusBlockerService : Service() {
             Log.d(TAG, "Overlay injected successfully via WindowManager.")
         } catch (e: Exception) {
             Log.e(TAG, "Error injecting WindowManager overlay: ${e.message}", e)
+            triggerFailsafeSafetyReset()
         }
     }
 
