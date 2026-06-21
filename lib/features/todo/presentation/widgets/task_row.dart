@@ -350,8 +350,8 @@ class TaskRow extends StatelessWidget {
                             task.title,
                             style: TextStyle(
                               color: task.isCompleted
-                                  ? Colors.white.withValues(alpha: 0.3)
-                                  : Colors.white.withValues(alpha: 0.9),
+                                  ? Colors.white.withValues(alpha: 0.45)
+                                  : Colors.white,
                               fontSize: 13,
                               fontWeight: FontWeight.w400,
                               decoration: task.isCompleted
@@ -367,7 +367,7 @@ class TaskRow extends StatelessWidget {
                                   Icon(
                                     Icons.calendar_today,
                                     color: task.isCompleted
-                                        ? Colors.white.withValues(alpha: 0.15)
+                                        ? Colors.white.withValues(alpha: 0.25)
                                         : const Color(0xFF00E676),
                                     size: 10,
                                   ),
@@ -376,7 +376,7 @@ class TaskRow extends StatelessWidget {
                                     '${task.dueDate!.month}/${task.dueDate!.day} ${task.dueDate!.hour.toString().padLeft(2, '0')}:${task.dueDate!.minute.toString().padLeft(2, '0')}',
                                     style: TextStyle(
                                       color: task.isCompleted
-                                          ? Colors.white.withValues(alpha: 0.15)
+                                          ? Colors.white.withValues(alpha: 0.25)
                                           : const Color(0xFF00E676),
                                       fontSize: 10,
                                       fontWeight: FontWeight.w500,
@@ -387,7 +387,7 @@ class TaskRow extends StatelessWidget {
                                     Text(
                                       '•',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.15),
+                                        color: Colors.white.withValues(alpha: 0.25),
                                         fontSize: 10,
                                       ),
                                     ),
@@ -400,7 +400,7 @@ class TaskRow extends StatelessWidget {
                                         '#${tag.name}',
                                         style: TextStyle(
                                           color: task.isCompleted
-                                              ? Colors.white.withValues(alpha: 0.15)
+                                              ? Colors.white.withValues(alpha: 0.25)
                                               : const Color(0xFF7C4DFF),
                                           fontSize: 10,
                                           fontWeight: FontWeight.w500,
@@ -418,7 +418,7 @@ class TaskRow extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     Icons.edit_outlined,
-                    color: Colors.white.withValues(alpha: 0.35),
+                    color: Colors.white.withValues(alpha: 0.5),
                     size: 16,
                   ),
                   onPressed: () => _showEditTaskDialog(context, task),

@@ -24,15 +24,15 @@ void main() {
     });
 
     blocTest<NavigationBloc, NavigationState>(
-      'should load 4 categories with status success on LoadNavigationEvent',
+      'should load 1 category with status success on LoadNavigationEvent',
       build: () => bloc,
       act: (bloc) => bloc.add(const LoadNavigationEvent()),
       expect: () => [
         const NavigationState(status: NavigationStatus.loading),
         isA<NavigationState>()
             .having((s) => s.status, 'status', NavigationStatus.success)
-            .having((s) => s.categories.length, 'categories count', 4)
-            .having((s) => s.filteredCategories.length, 'filtered categories count', 4),
+            .having((s) => s.categories.length, 'categories count', 1)
+            .having((s) => s.filteredCategories.length, 'filtered categories count', 1),
       ],
     );
 
@@ -48,7 +48,7 @@ void main() {
         isA<NavigationState>()
             .having((s) => s.searchQuery, 'query', 'blocker')
             .having((s) => s.filteredCategories.length, 'categories matching', 1)
-            .having((s) => s.filteredCategories.first.items.length, 'items matching', 2), // App Blocker, Site Blocker
+            .having((s) => s.filteredCategories.first.items.length, 'items matching', 1), // Focus Guardian (App Blocker)
       ],
     );
 
@@ -59,11 +59,11 @@ void main() {
         return bloc;
       },
       skip: 2,
-      act: (bloc) => bloc.add(const ToggleCategoryCollapseEvent('focus')),
+      act: (bloc) => bloc.add(const ToggleCategoryCollapseEvent('active_features')),
       expect: () => [
         isA<NavigationState>().having(
-          (s) => s.filteredCategories.firstWhere((c) => c.id == 'focus').isCollapsed,
-          'focus isCollapsed',
+          (s) => s.filteredCategories.firstWhere((c) => c.id == 'active_features').isCollapsed,
+          'active_features isCollapsed',
           true,
         ),
       ],

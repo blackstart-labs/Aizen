@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
@@ -21,6 +22,8 @@ class MockExportData extends Mock implements ExportData {}
 class MockImportData extends Mock implements ImportData {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late MockGetSettings mockGetSettings;
   late MockSaveSettings mockSaveSettings;
   late MockClearCache mockClearCache;
@@ -29,11 +32,26 @@ void main() {
   late MockImportData mockImportData;
   late SettingsBloc bloc;
 
+  const channel = MethodChannel('com.aizen.app/hardware_bridge');
+
   final tSettings = const GlobalSettings(
     themeMode: 'amoled',
     usageStatsGranted: true,
     systemOverlayGranted: false,
   );
+
+  setUpAll(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+      if (methodCall.method == 'checkUsagePermission') {
+        return true;
+      }
+      if (methodCall.method == 'checkOverlayPermission') {
+        return false;
+      }
+      return null;
+    });
+  });
 
   setUp(() {
     mockGetSettings = MockGetSettings();

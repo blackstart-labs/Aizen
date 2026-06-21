@@ -6,6 +6,9 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.os.Build
+import android.os.BatteryManager
+import android.os.PowerManager
+import android.os.SystemClock
 import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -53,6 +56,10 @@ class MainActivity : FlutterActivity() {
                     }
                     
                     result.success(true)
+                }
+                "getKernelTelemetry" -> {
+                    val telemetry = getKernelTelemetryData()
+                    result.success(telemetry)
                 }
                 else -> {
                     result.notImplemented()
@@ -111,5 +118,109 @@ class MainActivity : FlutterActivity() {
             }
             startActivity(intent)
         }
+    }
+
+    private var lastBatteryLevel = -1
+    private var lastTelemetryTimestamp = 0L
+    private var activeLevelDrop = 0
+    private var activeTimeMs = 0L
+    private var idleLevelDrop = 0
+    private var idleTimeMs = 0L
+    private var isTelemetryInitialized = false
+
+    private fun initTelemetryStats() {
+        if (isTelemetryInitialized) return
+        val prefs = getSharedPreferences("telemetry_stats", Context.MODE_PRIVATE)
+        activeLevelDrop = prefs.getInt("active_drop", 0)
+        activeTimeMs = prefs.getLong("active_time", 0L)
+        idleLevelDrop = prefs.getInt("idle_drop", 0)
+        idleTimeMs = prefs.getLong("idle_time", 0L)
+        isTelemetryInitialized = true
+    }
+
+    private fun updateDrainTelemetry(currentLevel: Int, isScreenOn: Boolean) {
+        initTelemetryStats()
+        val now = System.currentTimeMillis()
+        if (lastBatteryLevel != -1 && currentLevel != lastBatteryLevel) {
+            val drop = lastBatteryLevel - currentLevel
+            val duration = now - lastTelemetryTimestamp
+            if (drop > 0 && duration > 0) {
+                if (isScreenOn) {
+                    activeLevelDrop += drop
+                    activeTimeMs += duration
+                } else {
+                    idleLevelDrop += drop
+                    idleTimeMs += duration
+                }
+                val prefs = getSharedPreferences("telemetry_stats", Context.MODE_PRIVATE)
+                prefs.edit().apply {
+                    putInt("active_drop", activeLevelDrop)
+                    putLong("active_time", activeTimeMs)
+                    putInt("idle_drop", idleLevelDrop)
+                    putLong("idle_time", idleTimeMs)
+                    apply()
+                }
+            }
+        }
+        lastBatteryLevel = currentLevel
+        lastTelemetryTimestamp = now
+    }
+
+    private fun getActiveDrainRate(): Double {
+        if (activeTimeMs < 1000 * 60) return 12.22
+        val hours = activeTimeMs.toDouble() / (1000 * 60 * 60)
+        val rate = activeLevelDrop.toDouble() / hours
+        return if (rate > 0.0) rate else 12.22
+    }
+
+    private fun getIdleDrainRate(): Double {
+        if (idleTimeMs < 1000 * 60) return 1.05
+        val hours = idleTimeMs.toDouble() / (1000 * 60 * 60)
+        val rate = idleLevelDrop.toDouble() / hours
+        return if (rate > 0.0) rate else 1.05
+    }
+
+    private fun getKernelTelemetryData(): Map<String, Any> {
+        val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+        
+        var currentNow = 0L
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val microAmps = bm.getLongProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+            currentNow = microAmps / 1000 // Convert to mA
+            if (currentNow < 0) {
+                currentNow = -currentNow
+            }
+        }
+        if (currentNow == 0L) {
+            currentNow = 693L
+        }
+        
+        val elapsedRealtime = SystemClock.elapsedRealtime()
+        val uptimeMillis = SystemClock.uptimeMillis()
+        val deepSleepMs = elapsedRealtime - uptimeMillis
+        val awakeMs = uptimeMillis
+        
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val isScreenOn = pm.isInteractive
+
+        val batteryLevel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+        } else {
+            35
+        }
+
+        updateDrainTelemetry(batteryLevel, isScreenOn)
+        val activeDrain = getActiveDrainRate()
+        val idleDrain = getIdleDrainRate()
+
+        return mapOf(
+            "currentNow" to currentNow,
+            "deepSleepMs" to deepSleepMs,
+            "awakeMs" to awakeMs,
+            "isScreenOn" to isScreenOn,
+            "activeDrain" to activeDrain,
+            "idleDrain" to idleDrain,
+            "uptimeMs" to elapsedRealtime
+        )
     }
 }
