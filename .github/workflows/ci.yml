@@ -41,7 +41,7 @@ jobs:
       run: flutter test
 
     - name: Build Web Application
-      run: flutter build web --release --web-renderer canvaskit
+      run: flutter build web --release
 
     - name: Build Universal APK
       run: flutter build apk

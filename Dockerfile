@@ -31,7 +31,7 @@ RUN flutter pub get
 COPY . .
 
 # Build the release web package
-RUN flutter build web --release --web-renderer canvaskit
+RUN flutter build web --release
 
 # Stage 2: Serve web package via Nginx
 FROM nginx:alpine-slim
