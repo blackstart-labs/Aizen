@@ -21,6 +21,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        scheduleDailyNotification()
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
@@ -239,6 +240,29 @@ class MainActivity : FlutterActivity() {
             "activeDrain" to activeDrain,
             "idleDrain" to idleDrain,
             "uptimeMs" to elapsedRealtime
+        )
+    }
+
+    private fun scheduleDailyNotification() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+        val intent = Intent(this, NotificationReceiver::class.java)
+        val pendingIntent = android.app.PendingIntent.getBroadcast(
+            this,
+            1001,
+            intent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            } else {
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT
+            }
+        )
+
+        val triggerTime = System.currentTimeMillis() + 24 * 60 * 60 * 1000L
+        alarmManager.setRepeating(
+            android.app.AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            android.app.AlarmManager.INTERVAL_DAY,
+            pendingIntent
         )
     }
 }

@@ -9,7 +9,7 @@ import '../../domain/entities/storage_info.dart';
 import '../widgets/battery_info_panel.dart';
 import '../widgets/hardware_info_panel.dart';
 import '../widgets/storage_info_panel.dart';
-import '../widgets/kernel_telemetry_panel.dart';
+import '../widgets/system_status_panel.dart';
 import '../../../navigation_hub/presentation/widgets/navigation_hub_drawer.dart';
 
 class DeviceInfoPage extends StatefulWidget {
@@ -146,7 +146,7 @@ class _DeviceInfoPageState extends State<DeviceInfoPage> {
               final kernelPanel = BlocSelector<DeviceInfoBloc, DeviceInfoState, BatteryInfo?>(
                 selector: (state) => state.batteryInfo,
                 builder: (context, bt) {
-                  return KernelTelemetryPanel(info: bt);
+                  return SystemStatusPanel(info: bt);
                 },
               );
 

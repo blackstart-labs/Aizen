@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../domain/entities/battery_info.dart';
 
-class KernelTelemetryPanel extends StatefulWidget {
+class SystemStatusPanel extends StatefulWidget {
   final BatteryInfo? info;
 
-  const KernelTelemetryPanel({super.key, this.info});
+  const SystemStatusPanel({super.key, this.info});
 
   @override
-  State<KernelTelemetryPanel> createState() => _KernelTelemetryPanelState();
+  State<SystemStatusPanel> createState() => _SystemStatusPanelState();
 }
 
-class _KernelTelemetryPanelState extends State<KernelTelemetryPanel> {
+class _SystemStatusPanelState extends State<SystemStatusPanel> {
   static const _channel = MethodChannel('com.aizen.app/hardware_bridge');
   Timer? _timer;
 
@@ -41,7 +41,7 @@ class _KernelTelemetryPanelState extends State<KernelTelemetryPanel> {
   }
 
   @override
-  void didUpdateWidget(covariant KernelTelemetryPanel oldWidget) {
+  void didUpdateWidget(covariant SystemStatusPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
     _updateStatsFromProps();
   }
@@ -149,7 +149,7 @@ class _KernelTelemetryPanelState extends State<KernelTelemetryPanel> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'KERNEL PROFILE & TELEMETRY',
+                    'SYSTEM STATUS',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 12,

@@ -184,7 +184,8 @@ class _NavigationHubDrawerState extends State<NavigationHubDrawer> {
         final item = node.item;
         return InkWell(
           onTap: () {
-            Navigator.pop(context);
+            Navigator.pop(context); // Close Drawer
+            Navigator.popUntil(context, (route) => route.isFirst); // Go back to root (DashboardPage)
             if (item.id == 'stopwatch') {
               context.read<NavigationBloc>().add(const ChangeActiveIndexEvent(0));
             } else if (item.id == 'quick_tasks') {
@@ -269,6 +270,7 @@ class _NavigationHubDrawerState extends State<NavigationHubDrawer> {
               child: InkWell(
                 onTap: () {
                   Navigator.pop(context); // Close Drawer
+                  Navigator.popUntil(context, (route) => route.isFirst); // Go back to root (DashboardPage)
                   Navigator.push(
                     context,
                     MaterialPageRoute(
