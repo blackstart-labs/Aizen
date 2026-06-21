@@ -1,11 +1,11 @@
-import 'package:aizen/features/stopwatch/domain/entities/lap.dart';
-import 'package:aizen/features/stopwatch/domain/entities/stopwatch_state.dart';
-import 'package:aizen/features/stopwatch/domain/repositories/stopwatch_repository.dart';
-import 'package:aizen/features/stopwatch/domain/usecases/clear_stopwatch_data.dart';
-import 'package:aizen/features/stopwatch/domain/usecases/get_laps.dart';
-import 'package:aizen/features/stopwatch/domain/usecases/get_stopwatch_state.dart';
-import 'package:aizen/features/stopwatch/domain/usecases/save_laps.dart';
-import 'package:aizen/features/stopwatch/domain/usecases/save_stopwatch_state.dart';
+import 'package:Aizen/features/stopwatch/domain/entities/lap.dart';
+import 'package:Aizen/features/stopwatch/domain/entities/stopwatch_state.dart';
+import 'package:Aizen/features/stopwatch/domain/repositories/stopwatch_repository.dart';
+import 'package:Aizen/features/stopwatch/domain/usecases/clear_stopwatch_data.dart';
+import 'package:Aizen/features/stopwatch/domain/usecases/get_laps.dart';
+import 'package:Aizen/features/stopwatch/domain/usecases/get_stopwatch_state.dart';
+import 'package:Aizen/features/stopwatch/domain/usecases/save_laps.dart';
+import 'package:Aizen/features/stopwatch/domain/usecases/save_stopwatch_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
