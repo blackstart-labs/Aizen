@@ -43,12 +43,12 @@ void main() {
         return bloc;
       },
       skip: 2, // skip loading events
-      act: (bloc) => bloc.add(const SearchQueryChangedEvent('blocker')),
+      act: (bloc) => bloc.add(const SearchQueryChangedEvent('guardian')),
       expect: () => [
         isA<NavigationState>()
-            .having((s) => s.searchQuery, 'query', 'blocker')
+            .having((s) => s.searchQuery, 'query', 'guardian')
             .having((s) => s.filteredCategories.length, 'categories matching', 1)
-            .having((s) => s.filteredCategories.first.items.length, 'items matching', 1), // Focus Guardian (App Blocker)
+            .having((s) => s.filteredCategories.first.items.length, 'items matching', 1), // Focus Guardian
       ],
     );
 

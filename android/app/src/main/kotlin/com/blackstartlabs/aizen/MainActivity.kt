@@ -1,6 +1,8 @@
 package com.blackstartlabs.aizen
 
 import android.app.AppOpsManager
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
@@ -22,6 +24,22 @@ class MainActivity : FlutterActivity() {
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
+                "updateHabitWidget" -> {
+                    try {
+                        val appWidgetManager = AppWidgetManager.getInstance(this)
+                        val ids = appWidgetManager.getAppWidgetIds(
+                            ComponentName(this, HabitWidgetProvider::class.java)
+                        )
+                        val intent = Intent(this, HabitWidgetProvider::class.java).apply {
+                            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                            putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                        }
+                        sendBroadcast(intent)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("WIDGET_ERR", e.message, null)
+                    }
+                }
                 "getInstalledApps" -> {
                     val apps = getInstalledAppsList()
                     result.success(apps)

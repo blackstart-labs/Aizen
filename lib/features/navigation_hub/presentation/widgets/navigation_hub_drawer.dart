@@ -7,6 +7,7 @@ import '../../domain/entities/navigation_item.dart';
 import '../../domain/entities/module_category.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../focus_guardian/presentation/pages/app_blocker_page.dart';
+import '../../../habit_tracker/presentation/pages/habit_tracker_page.dart';
 
 abstract class VisualNode {}
 
@@ -195,6 +196,13 @@ class _NavigationHubDrawerState extends State<NavigationHubDrawer> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const AppBlockerPage(),
+                ),
+              );
+            } else if (item.id == 'habit_tracker') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HabitTrackerPage(),
                 ),
               );
             }

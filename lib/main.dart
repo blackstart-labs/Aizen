@@ -47,6 +47,16 @@ import 'features/settings/domain/usecases/export_data.dart';
 import 'features/settings/domain/usecases/import_data.dart';
 import 'features/settings/presentation/bloc/settings_bloc.dart';
 
+// Habit Tracker feature imports
+import 'features/habit_tracker/data/datasources/habit_local_data_source.dart';
+import 'features/habit_tracker/data/repositories/habit_repository_impl.dart';
+import 'features/habit_tracker/domain/usecases/get_habits.dart';
+import 'features/habit_tracker/domain/usecases/save_habit.dart';
+import 'features/habit_tracker/domain/usecases/delete_habit.dart';
+import 'features/habit_tracker/domain/usecases/mark_habit_complete.dart';
+import 'features/habit_tracker/domain/usecases/reset_habit_streak.dart';
+import 'features/habit_tracker/presentation/bloc/habit_bloc.dart';
+
 // Dashboard import
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
 
@@ -112,6 +122,19 @@ void main() async {
   final exportData = ExportData(settingsRepository);
   final importData = ImportData(settingsRepository);
 
+  // Habit Tracker feature wiring
+  final habitLocalDataSource = HabitLocalDataSourceImpl(
+    sharedPreferences: sharedPreferences,
+  );
+  final habitRepository = HabitRepositoryImpl(
+    localDataSource: habitLocalDataSource,
+  );
+  final getHabits = GetHabits(habitRepository);
+  final saveHabit = SaveHabit(habitRepository);
+  final deleteHabit = DeleteHabit(habitRepository);
+  final markHabitComplete = MarkHabitComplete(habitRepository);
+  final resetHabitStreak = ResetHabitStreak(habitRepository);
+
   runApp(
     MyApp(
       getStopwatchState: getStopwatchState,
@@ -132,6 +155,11 @@ void main() async {
       optimizeDatabase: optimizeDatabase,
       exportData: exportData,
       importData: importData,
+      getHabits: getHabits,
+      saveHabit: saveHabit,
+      deleteHabit: deleteHabit,
+      markHabitComplete: markHabitComplete,
+      resetHabitStreak: resetHabitStreak,
     ),
   );
 }
@@ -159,6 +187,12 @@ class MyApp extends StatelessWidget {
   final ExportData exportData;
   final ImportData importData;
 
+  final GetHabits getHabits;
+  final SaveHabit saveHabit;
+  final DeleteHabit deleteHabit;
+  final MarkHabitComplete markHabitComplete;
+  final ResetHabitStreak resetHabitStreak;
+
   const MyApp({
     super.key,
     required this.getStopwatchState,
@@ -179,6 +213,11 @@ class MyApp extends StatelessWidget {
     required this.optimizeDatabase,
     required this.exportData,
     required this.importData,
+    required this.getHabits,
+    required this.saveHabit,
+    required this.deleteHabit,
+    required this.markHabitComplete,
+    required this.resetHabitStreak,
   });
 
   @override
@@ -221,6 +260,15 @@ class MyApp extends StatelessWidget {
             optimizeDatabase: optimizeDatabase,
             exportData: exportData,
             importData: importData,
+          ),
+        ),
+        BlocProvider<HabitBloc>(
+          create: (context) => HabitBloc(
+            getHabits: getHabits,
+            saveHabit: saveHabit,
+            deleteHabit: deleteHabit,
+            markHabitComplete: markHabitComplete,
+            resetHabitStreak: resetHabitStreak,
           ),
         ),
       ],

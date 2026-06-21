@@ -34,7 +34,8 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
           const NavigationItem(id: 'stopwatch', title: 'Stopwatch', icon: Icons.timer, category: 'active_features'),
           const NavigationItem(id: 'quick_tasks', title: 'Quick Tasks', icon: Icons.playlist_add_check, category: 'active_features'),
           const NavigationItem(id: 'device_specs', title: 'Device Specs', icon: Icons.info_outline, category: 'active_features'),
-          const NavigationItem(id: 'app_blocker', title: 'Focus Guardian (App Blocker)', icon: Icons.block, category: 'active_features', badge: 'New'),
+          const NavigationItem(id: 'app_blocker', title: 'Focus Guardian', icon: Icons.block, category: 'active_features', badge: 'New'),
+          const NavigationItem(id: 'habit_tracker', title: 'Habit Builder', icon: Icons.track_changes, category: 'active_features', badge: 'New'),
         ],
       ),
     ];

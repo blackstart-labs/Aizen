@@ -21,9 +21,21 @@ import 'package:Aizen/features/settings/domain/usecases/optimize_database.dart';
 import 'package:Aizen/features/settings/domain/usecases/export_data.dart';
 import 'package:Aizen/features/settings/domain/usecases/import_data.dart';
 import 'package:Aizen/features/settings/domain/entities/global_settings.dart';
+import 'package:Aizen/features/habit_tracker/domain/entities/habit.dart';
+import 'package:Aizen/features/habit_tracker/domain/usecases/get_habits.dart';
+import 'package:Aizen/features/habit_tracker/domain/usecases/save_habit.dart';
+import 'package:Aizen/features/habit_tracker/domain/usecases/delete_habit.dart';
+import 'package:Aizen/features/habit_tracker/domain/usecases/mark_habit_complete.dart';
+import 'package:Aizen/features/habit_tracker/domain/usecases/reset_habit_streak.dart';
 import 'package:Aizen/main.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
+class MockGetHabits extends Mock implements GetHabits {}
+class MockSaveHabit extends Mock implements SaveHabit {}
+class MockDeleteHabit extends Mock implements DeleteHabit {}
+class MockMarkHabitComplete extends Mock implements MarkHabitComplete {}
+class MockResetHabitStreak extends Mock implements ResetHabitStreak {}
 
 class MockGetStopwatchState extends Mock implements GetStopwatchState {}
 class MockSaveStopwatchState extends Mock implements SaveSaveStopwatchState {}
@@ -73,6 +85,12 @@ void main() {
   late MockExportData mockExportData;
   late MockImportData mockImportData;
 
+  late MockGetHabits mockGetHabits;
+  late MockSaveHabit mockSaveHabit;
+  late MockDeleteHabit mockDeleteHabit;
+  late MockMarkHabitComplete mockMarkHabitComplete;
+  late MockResetHabitStreak mockResetHabitStreak;
+
   setUp(() {
     mockGetStopwatchState = MockGetStopwatchState();
     mockSaveStopwatchState = MockSaveStopwatchState();
@@ -96,11 +114,18 @@ void main() {
     mockExportData = MockExportData();
     mockImportData = MockImportData();
 
+    mockGetHabits = MockGetHabits();
+    mockSaveHabit = MockSaveHabit();
+    mockDeleteHabit = MockDeleteHabit();
+    mockMarkHabitComplete = MockMarkHabitComplete();
+    mockResetHabitStreak = MockResetHabitStreak();
+
     // Default stubbing
     when(() => mockGetStopwatchState()).thenAnswer((_) async => (null, null));
     when(() => mockGetLapsUsecase()).thenAnswer((_) async => (null, null));
     when(() => mockGetTasks()).thenAnswer((_) async => (null, <Task>[]));
     when(() => mockGetSettings()).thenAnswer((_) async => (null, const GlobalSettings()));
+    when(() => mockGetHabits()).thenAnswer((_) async => (null, <Habit>[]));
 
     when(() => mockGetHardwareInfo()).thenAnswer(
       (_) async => (
@@ -160,6 +185,11 @@ void main() {
         optimizeDatabase: mockOptimizeDatabase,
         exportData: mockExportData,
         importData: mockImportData,
+        getHabits: mockGetHabits,
+        saveHabit: mockSaveHabit,
+        deleteHabit: mockDeleteHabit,
+        markHabitComplete: mockMarkHabitComplete,
+        resetHabitStreak: mockResetHabitStreak,
       ),
     );
 
