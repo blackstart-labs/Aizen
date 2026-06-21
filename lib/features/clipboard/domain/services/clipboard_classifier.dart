@@ -1,10 +1,8 @@
-/// Aizen v1.6.0 — Clipboard content classifier.
-///
-/// Pure-Dart content-based categorization of a copied string into one of
-/// [Links, Snippets, Plain Text]. Heuristics are intentionally cheap
-/// (single-pass) for low-RAM phones.
-library aizen.clipboard.classifier;
-
+// Aizen v1.6.0 — Clipboard content classifier.
+//
+// Pure-Dart content-based categorization of a copied string into one of
+// Links, Snippets, or Plain Text. Heuristics are intentionally cheap
+// (single-pass) for low-RAM phones.
 import '../entities/clipboard_item.dart';
 
 class ClipboardClassifier {

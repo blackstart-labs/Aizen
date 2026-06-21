@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../domain/engine/calculator_engine.dart';
 import 'package:Aizen/core/theme/aizen_theme.dart';
-import '../../../navigation_hub/presentation/widgets/navigation_hub_drawer.dart';
 
-/// Aizen v1.6.0 — Scientific Calculator page.
-///
-/// Dense, space-efficient M3 grid. Supports:
-///   • Direct algebraic entry (no equals-chaining surprises)
-///   • DEG trig mode toggle
-///   • Live preview evaluation as the user types
-///   • Memory keys: M+, M-, MR, MC
-///   • History tape (last 12 results) — kept in-memory only, no I/O
+// ---------------------------------------------------------------------------
+// Scientific Calculator Page — Aizen v1.4.2
+//
+// Layout: portrait-only, full-grid (no horizontal scroll strip).
+//   Row 0  : DEG/RAD · 2nd · mode-aware sci functions (4 per row)
+//   Row 1–4: sci functions (4 × 4 = 16 keys, shift-aware)
+//   Row 5  : memory  MC  MR  M+  M-  (4 keys)
+//   Row 6–9: main    7 8 9 ÷ / 4 5 6 × / 1 2 3 − / . 0 % +
+//   Row 10 : AC  ⌫  =
+// ---------------------------------------------------------------------------
+
 class CalculatorPage extends StatefulWidget {
   const CalculatorPage({super.key});
 
@@ -27,11 +29,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
   String? _error;
   double _memory = 0;
   bool _isDeg = true;
+  bool _isShift = false; // 2nd mode for inverse / hyperbolic
 
   final List<String> _history = [];
 
+  // ── Expression helpers ─────────────────────────────────────────────────
   void _append(String token) {
-    AizenHaptics.selection();
+    HapticFeedback.selectionClick();
     setState(() {
       _error = null;
       _expression += token;
@@ -40,14 +44,12 @@ class _CalculatorPageState extends State<CalculatorPage> {
   }
 
   void _backspace() {
-    AizenHaptics.light();
+    HapticFeedback.lightImpact();
     setState(() {
       _error = null;
       if (_expression.isEmpty) return;
-      // Delete one full token: identifier or single char
       final lastChar = _expression[_expression.length - 1];
       if (RegExp(r'[a-zA-Z]').hasMatch(lastChar)) {
-        // Remove the trailing identifier run
         var i = _expression.length - 1;
         while (i > 0 && RegExp(r'[a-zA-Z]').hasMatch(_expression[i - 1])) {
           i--;
@@ -61,7 +63,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
   }
 
   void _clear() {
-    AizenHaptics.medium();
+    HapticFeedback.mediumImpact();
     setState(() {
       _expression = '';
       _preview = '0';
@@ -70,7 +72,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
   }
 
   void _clearAll() {
-    AizenHaptics.medium();
+    HapticFeedback.mediumImpact();
     setState(() {
       _expression = '';
       _preview = '0';
@@ -82,13 +84,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
   void _evaluate() {
     if (_expression.trim().isEmpty) return;
-    AizenHaptics.medium();
-    final result = _engine.evaluate(_expression);
+    HapticFeedback.mediumImpact();
+    final result = _engine.evaluate(_expression, degMode: _isDeg);
     setState(() {
       if (result.isSuccess) {
         final formatted = result.formatted;
         _history.insert(0, '$_expression = $formatted');
-        if (_history.length > 12) _history.removeLast();
+        if (_history.length > 20) _history.removeLast();
         _expression = formatted;
         _preview = formatted;
         _error = null;
@@ -105,23 +107,31 @@ class _CalculatorPageState extends State<CalculatorPage> {
       _error = null;
       return;
     }
-    final result = _engine.evaluate(_expression);
+    final result = _engine.evaluate(_expression, degMode: _isDeg);
     if (result.isSuccess) {
       _preview = result.formatted;
       _error = null;
     } else {
       _preview = '…';
-      _error = null; // don't show errors during typing, only on evaluate
+      _error = null;
     }
   }
 
   void _toggleDeg() {
-    AizenHaptics.light();
-    setState(() => _isDeg = !_isDeg);
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isDeg = !_isDeg;
+      _recomputePreview();
+    });
+  }
+
+  void _toggleShift() {
+    HapticFeedback.lightImpact();
+    setState(() => _isShift = !_isShift);
   }
 
   void _memoryOp(String op) {
-    AizenHaptics.selection();
+    HapticFeedback.selectionClick();
     setState(() {
       switch (op) {
         case 'MC':
@@ -132,43 +142,36 @@ class _CalculatorPageState extends State<CalculatorPage> {
           _recomputePreview();
           break;
         case 'M+':
-          final r = _engine.evaluate(_expression);
+          final r = _engine.evaluate(_expression, degMode: _isDeg);
           if (r.isSuccess) _memory += r.value;
           break;
         case 'M-':
-          final r = _engine.evaluate(_expression);
+          final r = _engine.evaluate(_expression, degMode: _isDeg);
           if (r.isSuccess) _memory -= r.value;
           break;
       }
     });
   }
 
+  // ── Build ──────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final canPop = Navigator.of(context).canPop();
     return Scaffold(
       backgroundColor: AizenTheme.amoledBlack,
-      drawer: canPop ? null : const NavigationHubDrawer(),
       appBar: AppBar(
         backgroundColor: AizenTheme.amoledBlack,
-        leading: canPop
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
-              )
-            : Builder(
-                builder: (ctx) => IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () => Scaffold.of(ctx).openDrawer(),
-                ),
-              ),
-        title: const Text('Calculator'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('Scientific Calculator'),
         actions: [
-          _DegRadToggle(isDeg: _isDeg, onToggle: _toggleDeg),
+          // History button
           IconButton(
             icon: const Icon(Icons.history, size: 20),
             onPressed: _showHistory,
           ),
+          // Clear-all button
           IconButton(
             icon: const Icon(Icons.delete_sweep_outlined, size: 20),
             onPressed: _clearAll,
@@ -178,400 +181,397 @@ class _CalculatorPageState extends State<CalculatorPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // ── Display panel ────────────────────────────────────────
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-              decoration: const BoxDecoration(
-                color: AizenTheme.surfaceLow,
-                border: Border(
-                  bottom: BorderSide(color: AizenTheme.hairlineBorder),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // Memory indicator row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (_memory != 0)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AizenTheme.accentAmber.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: AizenTheme.accentAmber.withValues(alpha: 0.4),
-                            ),
-                          ),
-                          child: Text(
-                            'M ${CalculatorResult.format(_memory)}',
-                            style: const TextStyle(
-                              color: AizenTheme.accentAmber,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        )
-                      else
-                        const SizedBox.shrink(),
-                      Text(
-                        _isDeg ? 'DEG' : 'RAD',
-                        style: const TextStyle(
-                          color: AizenTheme.textTertiary,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  // Expression line
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 60),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      reverse: true,
-                      child: Text(
-                        _expression.isEmpty ? ' ' : _expression,
-                        style: TextStyle(
-                          color: AizenTheme.textSecondary,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  // Preview / result line
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 64),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      reverse: true,
-                      child: Text(
-                        _preview,
-                        style: TextStyle(
-                          color: _error != null
-                              ? AizenTheme.accentRed
-                              : AizenTheme.textPrimary,
-                          fontSize: 38,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -1.2,
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (_error != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      _error!,
-                      style: const TextStyle(
-                        color: AizenTheme.accentRed,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            // ── Scientific row ───────────────────────────────────────
-            _buildScientificRow(),
-            // ── Keypad ───────────────────────────────────────────────
-            Expanded(
-              child: _buildKeypad(),
-            ),
+            _buildDisplay(),
+            Expanded(child: _buildKeypad()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildScientificRow() {
+  // ── Display panel ────────────────────────────────────────────────────
+  Widget _buildDisplay() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
       decoration: const BoxDecoration(
         color: AizenTheme.surfaceLow,
-        border: Border(
-          bottom: BorderSide(color: AizenTheme.hairlineBorder),
-        ),
+        border: Border(bottom: BorderSide(color: AizenTheme.hairlineBorder)),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _sciKey('sin(', AizenTheme.primaryPurple),
-            _sciKey('cos(', AizenTheme.primaryPurple),
-            _sciKey('tan(', AizenTheme.primaryPurple),
-            _sciKey('asin(', AizenTheme.primaryPurple),
-            _sciKey('acos(', AizenTheme.primaryPurple),
-            _sciKey('atan(', AizenTheme.primaryPurple),
-            _sciKey('log(', AizenTheme.accentCyan),
-            _sciKey('ln(', AizenTheme.accentCyan),
-            _sciKey('exp(', AizenTheme.accentCyan),
-            _sciKey('sqrt(', AizenTheme.accentCyan),
-            _sciKey('cbrt(', AizenTheme.accentCyan),
-            _sciKey('abs(', AizenTheme.accentCyan),
-            _sciKey('pi', AizenTheme.accentGreen),
-            _sciKey('e', AizenTheme.accentGreen),
-            _sciKey('^', AizenTheme.accentAmber),
-            _sciKey('(', AizenTheme.accentAmber),
-            _sciKey(')', AizenTheme.accentAmber),
-            _sciKey('!', AizenTheme.accentAmber),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _sciKey(String label, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 4),
-      child: Material(
-        color: AizenTheme.surfaceHigh,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: () {
-            if (label == '!') {
-              _append('!'); // not in engine; ignored
-            } else {
-              _append(label);
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // Status badges row
+          Row(
+            children: [
+              _badge(
+                _isDeg ? 'DEG' : 'RAD',
+                _isDeg ? AizenTheme.accentCyan : AizenTheme.accentGreen,
+                onTap: _toggleDeg,
+              ),
+              const SizedBox(width: 6),
+              if (_memory != 0)
+                _badge(
+                  'M ${CalculatorResult.format(_memory)}',
+                  AizenTheme.accentAmber,
+                ),
+              const Spacer(),
+              if (_isShift)
+                _badge('2ND', AizenTheme.primaryPurple),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Expression
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 52),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              reverse: true,
+              child: Text(
+                _expression.isEmpty ? ' ' : _expression,
+                style: const TextStyle(
+                  color: AizenTheme.textSecondary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.3,
+                ),
               ),
             ),
           ),
-        ),
+          const SizedBox(height: 2),
+          // Preview / result
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 58),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              reverse: true,
+              child: Text(
+                _preview,
+                style: TextStyle(
+                  color: _error != null
+                      ? AizenTheme.accentRed
+                      : AizenTheme.textPrimary,
+                  fontSize: 44,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1.5,
+                ),
+              ),
+            ),
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              _error!,
+              style: const TextStyle(
+                color: AizenTheme.accentRed,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
 
+  Widget _badge(String label, Color color, {VoidCallback? onTap}) {
+    final child = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.6,
+        ),
+      ),
+    );
+    if (onTap != null) {
+      return GestureDetector(onTap: onTap, child: child);
+    }
+    return child;
+  }
+
+  // ── Full keypad grid ──────────────────────────────────────────────────
   Widget _buildKeypad() {
     return Container(
       color: AizenTheme.amoledBlack,
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.fromLTRB(6, 6, 6, 4),
       child: Column(
         children: [
-          // Memory row
-          Row(
-            children: [
-              _memKey('MC'),
-              _memKey('MR'),
-              _memKey('M+'),
-              _memKey('M-'),
-            ],
+          // ── Scientific functions row 1 ────────────────────────────
+          Expanded(
+            child: Row(children: [
+              _sciBtn(
+                label: _isShift ? 'sin⁻¹' : 'sin',
+                token: _isShift ? 'asin(' : 'sin(',
+                color: AizenTheme.primaryPurple,
+              ),
+              _sciBtn(
+                label: _isShift ? 'cos⁻¹' : 'cos',
+                token: _isShift ? 'acos(' : 'cos(',
+                color: AizenTheme.primaryPurple,
+              ),
+              _sciBtn(
+                label: _isShift ? 'tan⁻¹' : 'tan',
+                token: _isShift ? 'atan(' : 'tan(',
+                color: AizenTheme.primaryPurple,
+              ),
+              _sciBtn(
+                label: _isShift ? 'sinh' : 'log',
+                token: _isShift ? 'sinh(' : 'log(',
+                color: AizenTheme.accentCyan,
+              ),
+            ]),
           ),
-          const SizedBox(height: 6),
-          // Numeric + operators
- Expanded(
-            child: Column(
-              children: [
-                Expanded(child: Row(
-                  children: [
-                    _numKey('7'),
-                    _numKey('8'),
-                    _numKey('9'),
-                    _opKey('÷', '/'),
-                  ],
-                )),
-                Expanded(child: Row(
-                  children: [
-                    _numKey('4'),
-                    _numKey('5'),
-                    _numKey('6'),
-                    _opKey('×', '*'),
-                  ],
-                )),
-                Expanded(child: Row(
-                  children: [
-                    _numKey('1'),
-                    _numKey('2'),
-                    _numKey('3'),
-                    _opKey('−', '-'),
-                  ],
-                )),
-                Expanded(child: Row(
-                  children: [
-                    _numKey('.'),
-                    _numKey('0'),
-                    _numKey('%', altLabel: 'mod'),
-                    _opKey('+', '+'),
-                  ],
-                )),
-                Expanded(child: Row(
-                  children: [
-                    _specialKey(
-                      label: 'AC',
-                      color: AizenTheme.accentRed,
-                      onTap: _clear,
-                      flex: 1,
-                    ),
-                    _specialKey(
-                      label: '⌫',
-                      color: AizenTheme.accentAmber,
-                      onTap: _backspace,
-                      flex: 1,
-                    ),
-                    _specialKey(
-                      label: '=',
-                      color: AizenTheme.primaryPurple,
-                      onTap: _evaluate,
-                      flex: 2,
-                      isPrimary: true,
-                    ),
-                  ],
-                )),
-              ],
-            ),
+          // ── Scientific functions row 2 ────────────────────────────
+          Expanded(
+            child: Row(children: [
+              _sciBtn(
+                label: _isShift ? 'cosh' : 'ln',
+                token: _isShift ? 'cosh(' : 'ln(',
+                color: AizenTheme.accentCyan,
+              ),
+              _sciBtn(
+                label: _isShift ? 'tanh' : '√',
+                token: _isShift ? 'tanh(' : 'sqrt(',
+                color: AizenTheme.accentCyan,
+              ),
+              _sciBtn(
+                label: _isShift ? '∛' : 'xʸ',
+                token: _isShift ? 'cbrt(' : '^',
+                color: AizenTheme.accentAmber,
+              ),
+              _sciBtn(
+                label: _isShift ? 'abs' : 'exp',
+                token: _isShift ? 'abs(' : 'exp(',
+                color: AizenTheme.accentCyan,
+              ),
+            ]),
+          ),
+          // ── Scientific functions row 3 ────────────────────────────
+          Expanded(
+            child: Row(children: [
+              _sciBtn(
+                label: 'π',
+                token: 'pi',
+                color: AizenTheme.accentGreen,
+              ),
+              _sciBtn(
+                label: 'e',
+                token: 'e',
+                color: AizenTheme.accentGreen,
+              ),
+              _sciBtn(
+                label: '(',
+                token: '(',
+                color: AizenTheme.accentAmber,
+              ),
+              _sciBtn(
+                label: ')',
+                token: ')',
+                color: AizenTheme.accentAmber,
+              ),
+            ]),
+          ),
+          // ── Memory + 2nd row ─────────────────────────────────────
+          Expanded(
+            child: Row(children: [
+              _memBtn('MC'),
+              _memBtn('MR'),
+              _memBtn('M+'),
+              _memBtn('M-'),
+              _shiftBtn(),
+            ]),
+          ),
+          // ── Numeric rows ─────────────────────────────────────────
+          Expanded(child: Row(children: [
+            _numBtn('7'), _numBtn('8'), _numBtn('9'), _opBtn('÷', '/'),
+          ])),
+          Expanded(child: Row(children: [
+            _numBtn('4'), _numBtn('5'), _numBtn('6'), _opBtn('×', '*'),
+          ])),
+          Expanded(child: Row(children: [
+            _numBtn('1'), _numBtn('2'), _numBtn('3'), _opBtn('−', '-'),
+          ])),
+          Expanded(child: Row(children: [
+            _numBtn('.'), _numBtn('0'), _opBtn('%', '%'), _opBtn('+', '+'),
+          ])),
+          // ── Action row ───────────────────────────────────────────
+          Expanded(
+            child: Row(children: [
+              _actionBtn(
+                label: 'AC',
+                color: AizenTheme.accentRed,
+                onTap: _clear,
+                flex: 1,
+              ),
+              _actionBtn(
+                label: '⌫',
+                color: AizenTheme.accentAmber,
+                onTap: _backspace,
+                flex: 1,
+              ),
+              _actionBtn(
+                label: '=',
+                color: AizenTheme.primaryPurple,
+                onTap: _evaluate,
+                flex: 2,
+                filled: true,
+              ),
+            ]),
           ),
         ],
       ),
     );
   }
 
-  Widget _memKey(String label) {
+  // ── Key builders ──────────────────────────────────────────────────────
+  Widget _sciBtn({
+    required String label,
+    required String token,
+    required Color color,
+  }) {
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
-        child: Material(
-          color: AizenTheme.surfaceHigh,
-          borderRadius: BorderRadius.circular(10),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: () => _memoryOp(label),
-            child: Container(
-              height: 38,
-              alignment: Alignment.center,
-              child: Text(
-                label,
-                style: const TextStyle(
-                  color: AizenTheme.accentAmber,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
+      child: _key(
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
           ),
         ),
+        bg: AizenTheme.surfaceHigh,
+        onTap: () => _append(token),
       ),
     );
   }
 
-  Widget _numKey(String label, {String? altLabel}) {
+  Widget _memBtn(String label) {
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(3),
-        child: Material(
-          color: AizenTheme.surfaceMid,
-          borderRadius: BorderRadius.circular(14),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () => _append(label),
-            child: Container(
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: AizenTheme.textPrimary,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (altLabel != null)
-                    Text(
-                      altLabel,
-                      style: const TextStyle(
-                        color: AizenTheme.textTertiary,
-                        fontSize: 9,
-                      ),
-                    ),
-                ],
-              ),
-            ),
+      child: _key(
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: AizenTheme.accentAmber,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
           ),
         ),
+        bg: AizenTheme.surfaceHigh,
+        onTap: () => _memoryOp(label),
       ),
     );
   }
 
-  Widget _opKey(String display, String append) {
+  Widget _shiftBtn() {
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(3),
-        child: Material(
-          color: AizenTheme.surfaceHigh,
-          borderRadius: BorderRadius.circular(14),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () => _append(append),
-            child: Container(
-              alignment: Alignment.center,
-              child: Text(
-                display,
-                style: const TextStyle(
-                  color: AizenTheme.primaryPurple,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
+      child: _key(
+        child: Text(
+          '2nd',
+          style: TextStyle(
+            color: _isShift ? Colors.black : AizenTheme.primaryPurple,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
           ),
         ),
+        bg: _isShift
+            ? AizenTheme.primaryPurple
+            : AizenTheme.primaryPurple.withValues(alpha: 0.15),
+        onTap: _toggleShift,
       ),
     );
   }
 
-  Widget _specialKey({
+  Widget _numBtn(String label) {
+    return Expanded(
+      child: _key(
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: AizenTheme.textPrimary,
+            fontSize: 26,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        bg: AizenTheme.surfaceMid,
+        onTap: () => _append(label),
+      ),
+    );
+  }
+
+  Widget _opBtn(String display, String token) {
+    return Expanded(
+      child: _key(
+        child: Text(
+          display,
+          style: const TextStyle(
+            color: AizenTheme.primaryPurple,
+            fontSize: 26,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        bg: AizenTheme.surfaceHigh,
+        onTap: () => _append(token),
+      ),
+    );
+  }
+
+  Widget _actionBtn({
     required String label,
     required Color color,
     required VoidCallback onTap,
     int flex = 1,
-    bool isPrimary = false,
+    bool filled = false,
   }) {
     return Expanded(
       flex: flex,
-      child: Padding(
-        padding: const EdgeInsets.all(3),
-        child: Material(
-          color: isPrimary ? color : color.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(14),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: onTap,
-            child: Container(
-              alignment: Alignment.center,
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: isPrimary ? Colors.black : color,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
+      child: _key(
+        child: Text(
+          label,
+          style: TextStyle(
+            color: filled ? Colors.black : color,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        bg: filled ? color : color.withValues(alpha: 0.14),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _key({
+    required Widget child,
+    required Color bg,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.all(3),
+      child: Material(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Container(
+            alignment: Alignment.center,
+            child: child,
           ),
         ),
       ),
     );
   }
 
+  // ── History sheet ─────────────────────────────────────────────────────
   void _showHistory() {
-    AizenHaptics.light();
+    HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -579,13 +579,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
         return SafeArea(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(ctx).size.height * 0.7,
+              maxHeight: MediaQuery.of(ctx).size.height * 0.65,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
                   child: Row(
                     children: [
                       const Text(
@@ -600,13 +600,15 @@ class _CalculatorPageState extends State<CalculatorPage> {
                       if (_history.isNotEmpty)
                         TextButton(
                           onPressed: () {
-                            setState(() {
-                              _history.clear();
-                            });
+                            setState(() => _history.clear());
                             Navigator.pop(ctx);
                           },
                           child: const Text('Clear'),
                         ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 20),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
                     ],
                   ),
                 ),
@@ -635,11 +637,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
                           itemBuilder: (ctx, i) {
                             final entry = _history[i];
                             final eqIdx = entry.lastIndexOf(' = ');
-                            final expr = eqIdx > 0 ? entry.substring(0, eqIdx) : entry;
-                            final res = eqIdx > 0
-                                ? entry.substring(eqIdx + 3)
-                                : '';
+                            final expr = eqIdx > 0
+                                ? entry.substring(0, eqIdx)
+                                : entry;
+                            final res =
+                                eqIdx > 0 ? entry.substring(eqIdx + 3) : '';
                             return ListTile(
+                              dense: true,
                               title: Text(
                                 expr,
                                 style: const TextStyle(
@@ -651,14 +655,13 @@ class _CalculatorPageState extends State<CalculatorPage> {
                                 res,
                                 style: const TextStyle(
                                   color: AizenTheme.textPrimary,
-                                  fontSize: 14,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                               onTap: () {
                                 setState(() {
                                   _expression = res;
-                                  _preview = res;
                                   _recomputePreview();
                                 });
                                 Navigator.pop(ctx);
@@ -672,43 +675,6 @@ class _CalculatorPageState extends State<CalculatorPage> {
           ),
         );
       },
-    );
-  }
-}
-
-class _DegRadToggle extends StatelessWidget {
-  final bool isDeg;
-  final VoidCallback onToggle;
-  const _DegRadToggle({required this.isDeg, required this.onToggle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: Material(
-        color: AizenTheme.surfaceHigh,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onToggle,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  isDeg ? 'DEG' : 'RAD',
-                  style: const TextStyle(
-                    color: AizenTheme.primaryPurple,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

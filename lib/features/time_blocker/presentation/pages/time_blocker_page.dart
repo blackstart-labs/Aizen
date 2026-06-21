@@ -442,11 +442,11 @@ class _TimeBlockerPageState extends State<TimeBlockerPage> {
 
   // ── Helpers ──────────────────────────────────────────────────────────
   String _dayTitle(DateTime d, bool isToday) {
-    if (isToday) return 'TODAY';
+    if (isToday) { return 'TODAY'; }
     final tomorrow = DateTime.now().add(const Duration(days: 1));
     if (d.year == tomorrow.year &&
         d.month == tomorrow.month &&
-        d.day == tomorrow.day) return 'TOMORROW';
+        d.day == tomorrow.day) { return 'TOMORROW'; }
     return _weekday(d.weekday).toUpperCase();
   }
 
@@ -500,7 +500,7 @@ class _TimeBlockerPageState extends State<TimeBlockerPage> {
         child: child!,
       ),
     );
-    if (picked != null) {
+    if (picked != null && mounted) {
       context.read<TimeBlockBloc>().add(ChangeSelectedDayEvent(picked));
     }
   }

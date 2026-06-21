@@ -2,7 +2,6 @@ import 'package:flutter/material.dart' hide ClipboardStatus;
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/aizen_theme.dart';
-import '../../domain/entities/clipboard_item.dart';
 import '../bloc/clipboard_bloc.dart';
 import '../bloc/clipboard_event.dart';
 import '../bloc/clipboard_state.dart';

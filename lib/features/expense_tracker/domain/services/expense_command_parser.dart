@@ -1,16 +1,15 @@
-/// Aizen v1.6.0 — Expense command parser.
-///
-/// Parses terse command-input strings like:
-///   `50 #lunch`
-///   `1200 #internet`
-///   `45.50 #groceries weekly run`
-///   `-20 #refund cancelled subscription`
-///   `30 #coffee at the office`
-///
-/// Output is a structured [ParsedExpense] record ready to be inserted into
-/// the ledger. Designed to be pure-Dart and unit-testable with zero Flutter
-/// dependencies.
-library aizen.expense_tracker.command_parser;
+// Aizen v1.4.2 — Expense command parser.
+//
+// Parses terse command-input strings like:
+//   50 #lunch
+//   1200 #internet
+//   45.50 #groceries weekly run
+//   -20 #refund cancelled subscription
+//   30 #coffee at the office
+//
+// Output is a structured ParsedExpense record ready to be inserted into
+// the ledger. Designed to be pure-Dart and unit-testable with zero Flutter
+// dependencies.
 
 class ParsedExpense {
   final double amount;

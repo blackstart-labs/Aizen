@@ -92,7 +92,6 @@ class _HabitCardState extends State<HabitCard> {
   Widget build(BuildContext context) {
     final habit = widget.habit;
     final now = DateTime.now();
-    final todayStr = '${now.year}-${now.month}-${now.day}';
     final completedToday = habit.completionHistory.any(
       (d) {
         final local = d.toLocal();

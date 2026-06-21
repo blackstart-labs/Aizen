@@ -1,18 +1,16 @@
-/// Aizen v1.6.0 — Scientific Calculator Engine.
-///
-/// Pure-Dart, memory-efficient recursive-descent parser supporting:
-///   • +, -, *, /, %, ^ (power)
-///   • Parentheses (nested arbitrarily deep)
-///   • Unary minus / unary plus
-///   • Functions: sin, cos, tan, asin, acos, atan, sinh, cosh, tanh
-///   • log (base-10), ln (natural), exp, sqrt, cbrt, abs
-///   • Constants: pi, e, phi, tau
-///   • Implicit multiplication: 2(3+1) == 2*(3+1), 2sin(pi) == 2*sin(pi)
-///
-/// Designed for low-RAM phones: single-pass tokenizer, no regex,
-/// minimal object allocations per token advance.
-library aizen.calculator.engine;
-
+// Aizen v1.6.0 — Scientific Calculator Engine.
+//
+// Pure-Dart, memory-efficient recursive-descent parser supporting:
+//   • +, -, *, /, %, ^ (power)
+//   • Parentheses (nested arbitrarily deep)
+//   • Unary minus / unary plus
+//   • Functions: sin, cos, tan, asin, acos, atan, sinh, cosh, tanh
+//   • log (base-10), ln (natural), exp, sqrt, cbrt, abs
+//   • Constants: pi, e, phi, tau
+//   • Implicit multiplication: 2(3+1) == 2*(3+1), 2sin(pi) == 2*sin(pi)
+//
+// Designed for low-RAM phones: single-pass tokenizer, no regex,
+// minimal object allocations per token advance.
 import 'dart:math' as math;
 
 /// Result wrapper from the calculator engine.
@@ -82,12 +80,13 @@ class CalculatorEngine {
   const CalculatorEngine();
 
   /// Evaluate [expression] and return either a success or failure result.
-  CalculatorResult evaluate(String expression) {
+  /// Set [degMode] to true (default) for degrees, false for radians.
+  CalculatorResult evaluate(String expression, {bool degMode = true}) {
     if (expression.trim().isEmpty) {
       return CalculatorResult.failure('Empty expression');
     }
     try {
-      final parser = _Parser(expression);
+      final parser = _Parser(expression, degMode: degMode);
       final value = parser.parseExpression();
       if (parser._cur != _Tok.end) {
         throw _CalcError('Unexpected token at position ${parser.position}');
@@ -117,13 +116,14 @@ class _Parser {
   final String src;
   int position = 0;
   final int length;
+  final bool degMode;
 
   _Tok _cur = _Tok.end;
   double _numValue = 0;
   String _identValue = '';
   String _opValue = '';
 
-  _Parser(this.src) : length = src.length {
+  _Parser(this.src, {this.degMode = true}) : length = src.length {
     _advance();
   }
 
@@ -234,31 +234,48 @@ class _Parser {
   }
 
   // ── Function dispatch ──────────────────────────────────────────────
+  double _toRad(double v) => degMode ? v * _deg2rad : v;
+  double _fromRad(double v) => degMode ? v * _rad2deg : v;
+
   double _callFunction(String name, List<double> args) {
     final argc = args.length;
     switch (name) {
+      // ── Trigonometric ──────────────────────────────────────────────
       case 'sin':
         _require(name, argc, 1);
-        return math.sin(args[0] * _deg2rad);
+        return math.sin(_toRad(args[0]));
       case 'cos':
         _require(name, argc, 1);
-        return math.cos(args[0] * _deg2rad);
+        return math.cos(_toRad(args[0]));
       case 'tan':
         _require(name, argc, 1);
-        final t = math.tan(args[0] * _deg2rad);
+        // In DEG mode, 90°/270°/... have no finite tan. We detect by checking
+        // whether the angle (mod 180) is within floating-point tolerance of ±90.
+        if (degMode) {
+          final normalized = args[0] % 180.0;
+          final absNorm = normalized.abs();
+          if ((absNorm - 90.0).abs() < 1e-9) {
+            throw _CalcError('tan(${args[0]}) is undefined');
+          }
+        }
+        final t = math.tan(_toRad(args[0]));
         if (t.isInfinite || t.isNaN) throw _CalcError('tan() out of domain');
         return t;
       case 'asin':
         _require(name, argc, 1);
-        if (args[0].abs() > 1) throw _CalcError('asin() domain error');
-        return math.asin(args[0]) * _rad2deg;
+        if (args[0].abs() > 1) throw _CalcError('asin() domain: input must be in [-1, 1]');
+        return _fromRad(math.asin(args[0]));
       case 'acos':
         _require(name, argc, 1);
-        if (args[0].abs() > 1) throw _CalcError('acos() domain error');
-        return math.acos(args[0]) * _rad2deg;
+        if (args[0].abs() > 1) throw _CalcError('acos() domain: input must be in [-1, 1]');
+        return _fromRad(math.acos(args[0]));
       case 'atan':
         _require(name, argc, 1);
-        return math.atan(args[0]) * _rad2deg;
+        return _fromRad(math.atan(args[0]));
+      case 'atan2':
+        _require(name, argc, 2);
+        return _fromRad(math.atan2(args[0], args[1]));
+      // ── Hyperbolic ─────────────────────────────────────────────────
       case 'sinh':
         _require(name, argc, 1);
         return _sinh(args[0]);
@@ -268,35 +285,60 @@ class _Parser {
       case 'tanh':
         _require(name, argc, 1);
         return _tanh(args[0]);
+      case 'asinh':
+        _require(name, argc, 1);
+        return math.log(args[0] + math.sqrt(args[0] * args[0] + 1));
+      case 'acosh':
+        _require(name, argc, 1);
+        if (args[0] < 1) throw _CalcError('acosh() domain: input must be >= 1');
+        return math.log(args[0] + math.sqrt(args[0] * args[0] - 1));
+      case 'atanh':
+        _require(name, argc, 1);
+        if (args[0].abs() >= 1) throw _CalcError('atanh() domain: |input| must be < 1');
+        return 0.5 * math.log((1 + args[0]) / (1 - args[0]));
+      // ── Logarithmic / exponential ───────────────────────────────────
       case 'log':
         _require(name, argc, 1);
-        if (args[0] <= 0) throw _CalcError('log() domain error');
+        if (args[0] <= 0) throw _CalcError('log() domain: input must be > 0');
         return math.log(args[0]) / math.ln10;
+      case 'log2':
+        _require(name, argc, 1);
+        if (args[0] <= 0) throw _CalcError('log2() domain: input must be > 0');
+        return math.log(args[0]) / math.ln2;
       case 'ln':
         _require(name, argc, 1);
-        if (args[0] <= 0) throw _CalcError('ln() domain error');
+        if (args[0] <= 0) throw _CalcError('ln() domain: input must be > 0');
         return math.log(args[0]);
       case 'exp':
         _require(name, argc, 1);
         return math.exp(args[0]);
+      // ── Roots / powers ──────────────────────────────────────────────
       case 'sqrt':
         _require(name, argc, 1);
-        if (args[0] < 0) throw _CalcError('sqrt() domain error');
+        if (args[0] < 0) throw _CalcError('sqrt() domain: input must be >= 0');
         return math.sqrt(args[0]);
       case 'cbrt':
         _require(name, argc, 1);
-        // dart:math has no cbrt — handle sign manually.
-        final v = args[0];
-        return v < 0 ? -math.pow(-v, 1 / 3).toDouble() : math.pow(v, 1 / 3).toDouble();
+        final vCbrt = args[0];
+        return vCbrt < 0
+            ? -math.pow(-vCbrt, 1 / 3).toDouble()
+            : math.pow(vCbrt, 1 / 3).toDouble();
+      case 'sq':
+        // sq(x) = x²
+        _require(name, argc, 1);
+        return args[0] * args[0];
+      case 'rec':
+        // rec(x) = 1/x
+        _require(name, argc, 1);
+        if (args[0] == 0) throw _CalcError('rec(): division by zero');
+        return 1.0 / args[0];
+      // ── Rounding / sign ─────────────────────────────────────────────
       case 'abs':
         _require(name, argc, 1);
         return args[0].abs();
-      case 'max':
-        if (argc < 1) throw _CalcError('max() needs at least 1 argument');
-        return args.reduce((a, b) => a > b ? a : b);
-      case 'min':
-        if (argc < 1) throw _CalcError('min() needs at least 1 argument');
-        return args.reduce((a, b) => a < b ? a : b);
+      case 'sign':
+        _require(name, argc, 1);
+        return args[0].sign;
       case 'round':
         _require(name, argc, 1);
         return args[0].roundToDouble();
@@ -306,9 +348,55 @@ class _Parser {
       case 'ceil':
         _require(name, argc, 1);
         return args[0].ceilToDouble();
+      case 'trunc':
+        _require(name, argc, 1);
+        return args[0].truncateToDouble();
+      // ── Factorial ───────────────────────────────────────────────────
+      case 'fact':
+        _require(name, argc, 1);
+        final n = args[0];
+        if (n < 0 || n != n.truncateToDouble()) {
+          throw _CalcError('fact() requires a non-negative integer');
+        }
+        if (n > 170) throw _CalcError('fact(): overflow (max input 170)');
+        return _factorial(n.toInt()).toDouble();
+      // ── Variadic stats ──────────────────────────────────────────────
+      case 'max':
+        if (argc < 1) throw _CalcError('max() needs at least 1 argument');
+        return args.reduce((a, b) => a > b ? a : b);
+      case 'min':
+        if (argc < 1) throw _CalcError('min() needs at least 1 argument');
+        return args.reduce((a, b) => a < b ? a : b);
+      case 'gcd':
+        _require(name, argc, 2);
+        return _gcd(args[0].abs().toInt(), args[1].abs().toInt()).toDouble();
+      case 'lcm':
+        _require(name, argc, 2);
+        final a = args[0].abs().toInt();
+        final b = args[1].abs().toInt();
+        if (a == 0 || b == 0) return 0;
+        return (a ~/ _gcd(a, b) * b).toDouble();
       default:
         throw _CalcError('Unknown function: $name');
     }
+  }
+
+  static int _factorial(int n) {
+    if (n == 0 || n == 1) return 1;
+    var result = 1;
+    for (var i = 2; i <= n; i++) {
+      result *= i;
+    }
+    return result;
+  }
+
+  static int _gcd(int a, int b) {
+    while (b != 0) {
+      final t = b;
+      b = a % b;
+      a = t;
+    }
+    return a;
   }
 
   void _require(String fn, int got, int want) {

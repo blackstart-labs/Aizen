@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:Aizen/features/habit_tracker/domain/entities/habit.dart';
-import 'package:Aizen/features/habit_tracker/domain/entities/relapse_log.dart';
 import 'package:Aizen/features/habit_tracker/domain/usecases/get_habits.dart';
 import 'package:Aizen/features/habit_tracker/domain/usecases/save_habit.dart';
 import 'package:Aizen/features/habit_tracker/domain/usecases/delete_habit.dart';

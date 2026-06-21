@@ -41,7 +41,6 @@ class AizenTheme {
       scaffoldBackgroundColor: amoledBlack,
       canvasColor: amoledBlack,
       cardColor: surfaceMid,
-      dialogBackgroundColor: surfaceMid,
       dividerColor: hairlineBorder,
       hintColor: textTertiary,
 
@@ -60,11 +59,8 @@ class AizenTheme {
         error: accentRed,
         onError: Colors.black,
         errorContainer: Color(0xFF241010),
-        background: amoledBlack,
-        onBackground: textPrimary,
         surface: surfaceMid,
         onSurface: textPrimary,
-        surfaceVariant: surfaceHigh,
         onSurfaceVariant: textSecondary,
         surfaceContainerLowest: amoledBlack,
         surfaceContainerLow: surfaceLow,
@@ -308,7 +304,6 @@ class AizenTheme {
       highlightColor: Colors.transparent,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       visualDensity: VisualDensity.standard,
-      useMaterial3: true,
     );
   }
 
