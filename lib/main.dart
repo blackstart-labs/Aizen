@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:battery_plus/battery_plus.dart';
+import 'core/theme/aizen_theme.dart';
 
 // Stopwatch feature imports
 import 'features/stopwatch/data/datasources/stopwatch_local_data_source.dart';
@@ -62,6 +64,14 @@ import 'features/dashboard/presentation/pages/dashboard_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+    systemNavigationBarColor: Colors.black,
+    systemNavigationBarIconBrightness: Brightness.light,
+    systemNavigationBarDividerColor: Colors.transparent,
+  ));
 
   // Shared dependencies
   final sharedPreferences = await SharedPreferences.getInstance();
@@ -222,7 +232,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseDarkTheme = ThemeData.dark(useMaterial3: true);
     return MultiBlocProvider(
       providers: [
         BlocProvider<StopwatchBloc>(
@@ -275,15 +284,8 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Aizen',
         debugShowCheckedModeBanner: false,
-        theme: baseDarkTheme.copyWith(
-          scaffoldBackgroundColor: const Color(0xFF000000),
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF7C4DFF),
-            secondary: Color(0xFF00E676),
-            surface: Color(0xFF0C0C0C),
-          ),
-          textTheme: GoogleFonts.lexendTextTheme(baseDarkTheme.textTheme),
-        ),
+        theme: AizenTheme.darkTheme,
+        scrollBehavior: AizenScrollBehavior(),
         home: const DashboardPage(),
       ),
     );
