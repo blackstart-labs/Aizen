@@ -6,6 +6,8 @@ import '../bloc/todo_state.dart';
 import '../widgets/inline_nlp_input.dart';
 import '../widgets/filter_bar.dart';
 import '../widgets/task_row.dart';
+import '../../../navigation_hub/presentation/widgets/navigation_hub_drawer.dart';
+import '../../../../core/theme/aizen_theme.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -23,24 +25,36 @@ class _TodoPageState extends State<TodoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final edgePadding = AizenBreakpoints.horizontalPadding(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF000000),
+      backgroundColor: AizenTheme.amoledBlack,
+      drawer: const NavigationHubDrawer(),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF000000),
+        backgroundColor: AizenTheme.amoledBlack,
         elevation: 0,
-        title: const Text(
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu, color: AizenTheme.textPrimary, size: 20),
+              onPressed: () {
+                AizenHaptics.selection();
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
+        ),
+        title: Text(
           'Quick Tasks',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            letterSpacing: -0.5,
-          ),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.5,
+              ),
         ),
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: EdgeInsets.symmetric(horizontal: edgePadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -54,7 +68,7 @@ class _TodoPageState extends State<TodoPage> {
                     if (state.status == TodoStatus.loading) {
                       return const Center(
                         child: CircularProgressIndicator(
-                          color: Color(0xFF7C4DFF),
+                          color: AizenTheme.primaryPurple,
                           strokeWidth: 2,
                         ),
                       );
@@ -62,10 +76,9 @@ class _TodoPageState extends State<TodoPage> {
                       return Center(
                         child: Text(
                           state.errorMessage ?? 'Failed to load tasks.',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 12,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AizenTheme.textTertiary,
+                              ),
                         ),
                       );
                     } else if (state.tasks.isEmpty) {
@@ -75,17 +88,15 @@ class _TodoPageState extends State<TodoPage> {
                           children: [
                             Icon(
                               Icons.playlist_add_check,
-                              color: Colors.white.withValues(alpha: 0.1),
+                              color: AizenTheme.textPrimary.withValues(alpha: 0.1),
                               size: 48,
                             ),
                             const SizedBox(height: 12),
                             Text(
                               'All clear. Enjoy your day!',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AizenTheme.textTertiary,
+                                  ),
                             ),
                           ],
                         ),

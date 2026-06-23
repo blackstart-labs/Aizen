@@ -1,9 +1,11 @@
-# Quick Tasks (Todo) Module (Version 1.3.0)
+# Quick Tasks (Todo) Module (Version 1.4.1)
 
 The Quick Tasks module is a high-density, performance-optimized task management utility. It integrates inline Natural Language Processing (NLP) parsing to capture priorities, tags, and dates without leaving the keyboard.
 
 ## Features
 - **Inline NLP Parser**: A pure Dart regex-based string parser that extracts priority (`!!1` to `!!4`), tags (`#tagname`), and due date/time parameters (`today`, `tomorrow`, `monday`, `at 5pm`, etc.) dynamically.
+- **Clock Time Picker Fallback**: Option to set exact date/time using standard clock pickers if NLP regex parsing isn't preferred.
+- **Interactive Edit Dialog**: Tap on the task text column or a pen icon to open a Material 3 dialog for modifying title, priority, due date/time, and tags.
 - **Minimalist Tiered Hierarchy**: Indented subtask lists nested beneath the parent task row with a clean vertical guide line.
 - **AMOLED-First Aesthetics**: Visual design inspired by Bitwarden/Telegram dark UI layouts utilizing thin colored border accents to denote priority levels.
 - **Slidable Rows**: Integrated `Dismissible` swipes (Left to delete, Right to mark as complete).

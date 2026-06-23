@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../domain/entities/task.dart';
 
 abstract class TodoEvent extends Equatable {
   const TodoEvent();
@@ -13,11 +14,12 @@ class LoadTodosEvent extends TodoEvent {
 
 class AddTodoEvent extends TodoEvent {
   final String nlpInput;
+  final DateTime? manualDueDate;
 
-  const AddTodoEvent(this.nlpInput);
+  const AddTodoEvent(this.nlpInput, {this.manualDueDate});
 
   @override
-  List<Object?> get props => [nlpInput];
+  List<Object?> get props => [nlpInput, manualDueDate];
 }
 
 class ToggleTodoEvent extends TodoEvent {
@@ -73,4 +75,13 @@ class RescheduleTodoEvent extends TodoEvent {
 
   @override
   List<Object?> get props => [taskId, dueDate];
+}
+
+class UpdateTodoEvent extends TodoEvent {
+  final Task task;
+
+  const UpdateTodoEvent(this.task);
+
+  @override
+  List<Object?> get props => [task];
 }

@@ -27,6 +27,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
     on<ToggleSubtaskEvent>(_onToggleSubtask);
     on<ChangeSortOrderEvent>(_onChangeSortOrder);
     on<RescheduleTodoEvent>(_onRescheduleTodo);
+    on<UpdateTodoEvent>(_onUpdateTodo);
   }
 
   Future<void> _onLoadTodos(
@@ -75,7 +76,7 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: nlpData.title,
       isCompleted: false,
-      dueDate: nlpData.dueDate,
+      dueDate: event.manualDueDate ?? nlpData.dueDate,
       priority: nlpData.priority,
       tags: nlpData.tags,
       subtasks: const [],
@@ -191,6 +192,21 @@ class TodoBloc extends Bloc<TodoEvent, TodoState> {
       return;
     }
 
+    add(const LoadTodosEvent());
+  }
+
+  Future<void> _onUpdateTodo(
+    UpdateTodoEvent event,
+    Emitter<TodoState> emit,
+  ) async {
+    final saveResult = await saveTask(event.task);
+    if (saveResult.$1 != null) {
+      emit(state.copyWith(
+        status: TodoStatus.failure,
+        errorMessage: saveResult.$1!.message,
+      ));
+      return;
+    }
     add(const LoadTodosEvent());
   }
 

@@ -1,10 +1,14 @@
-# Device Info System Module (Version 1.2.0)
+# Device Info System Module (Version 1.4.1)
 
-The Device Info System module provides a local-first technical dashboard displaying deep hardware specifications, real-time battery status, and segmented storage usage metrics.
+The Device Info System module provides a local-first technical dashboard displaying deep hardware specifications, real-time battery status, segmented storage usage metrics, and live kernel profile telemetry.
 
 ## Features
 - **System Hardware**: Renders model, manufacturer, OS version, kernel architecture, processor cores (`Platform.numberOfProcessors`), and system memory.
 - **Power & Battery**: Streams battery levels, status (charging, discharging, full, unknown), health state, and temperature.
+- **Kernel Profile & Telemetry**: Queries native device APIs to compute:
+  - Discharge current draw in milliamperes (mA).
+  - Exact active and idle battery drain rates (%/hr) based on persistent battery drop tracking over screen status changes.
+  - Uptime profile metrics including deep sleep and awake durations.
 - **System Storage**: Queries and renders a custom visual segmented space progress bar indicating free vs used bytes.
 
 ## Architecture
@@ -34,6 +38,7 @@ This module follows the **Feature-First Layered Architecture** pattern:
 - **Widgets**:
   - `HardwareInfoPanel`: Dense row list for hardware specs.
   - `BatteryInfoPanel`: Adaptive icons and telemetry.
+  - `KernelTelemetryPanel`: AMOLED layout showing discharge rate, deep sleep/awake time, and active/idle drain metrics.
   - `StorageInfoPanel`: Segmented progress bar.
 - **Pages**:
   - `DeviceInfoPage`: Scaffold layout that adapts responsively to desktop and mobile constraints.
