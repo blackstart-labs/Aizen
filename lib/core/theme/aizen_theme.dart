@@ -9,25 +9,25 @@ import 'package:google_fonts/google_fonts.dart';
 class AizenTheme {
   AizenTheme._();
 
-  // ── Core AMOLED palette ────────────────────────────────────────────────
-  static const Color amoledBlack = Color(0xFF000000);
-  static const Color surfaceLow = Color(0xFF0E0E0E);
-  static const Color surfaceMid = Color(0xFF121212);
-  static const Color surfaceHigh = Color(0xFF1C1C1C);
-  static const Color surfaceHighest = Color(0xFF242426);
+  // ── Core Sleek Dark Palette (Koinly Inspired) ─────────────────────────
+  static const Color amoledBlack = Color(0xFF061012);
+  static const Color surfaceLow = Color(0xFF10191D);
+  static const Color surfaceMid = Color(0xFF162226);
+  static const Color surfaceHigh = Color(0xFF1B2A2F);
+  static const Color surfaceHighest = Color(0xFF22353B);
 
-  // Accent system (M3 tonal roles)
-  static const Color primaryPurple = Color(0xFF7C4DFF);
-  static const Color primaryPurpleMuted = Color(0xFF4D2E99);
-  static const Color accentGreen = Color(0xFF00E676);
-  static const Color accentRed = Color(0xFFFF5252);
-  static const Color accentAmber = Color(0xFFFFAB00);
-  static const Color accentCyan = Color(0xFF18FFFF);
+  // Accent system (Koinly tonal roles)
+  static const Color primaryPurple = Color(0xFF00C7D8); // Sleek Cyan
+  static const Color primaryPurpleMuted = Color(0xFF005E67);
+  static const Color accentGreen = Color(0xFF27D17F); // Sleek Income Green
+  static const Color accentRed = Color(0xFFFF5353); // Sleek Expense Red
+  static const Color accentAmber = Color(0xFFF59E0B);
+  static const Color accentCyan = Color(0xFF00ADB5);
 
-  static const Color hairlineBorder = Color(0xFF242426);
-  static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xB3FFFFFF); // 70%
-  static const Color textTertiary = Color(0x66FFFFFF);  // 40%
+  static const Color hairlineBorder = Color(0xFF1E3036);
+  static const Color textPrimary = Color(0xFFE6F1F3);
+  static const Color textSecondary = Color(0xB3E6F1F3); // 70%
+  static const Color textTertiary = Color(0xFF7C8A92);  // Muted grey
 
   // ── M3 Expressive Shape Tokens ─────────────────────────────────────────
   // xs=6 sm=10 md=16 lg=24 xl=32 full=100
@@ -130,18 +130,18 @@ class AizenTheme {
       colorScheme: const ColorScheme.dark(
         primary: primaryPurple,
         onPrimary: Colors.black,
-        primaryContainer: Color(0xFF1A1424),
+        primaryContainer: Color(0xFF0F262B),
         onPrimaryContainer: Colors.white,
         secondary: accentGreen,
         onSecondary: Colors.black,
-        secondaryContainer: Color(0xFF0D2417),
+        secondaryContainer: Color(0xFF0D2B1C),
         onSecondaryContainer: Colors.white,
         tertiary: accentCyan,
         onTertiary: Colors.black,
-        tertiaryContainer: Color(0xFF0A2424),
+        tertiaryContainer: Color(0xFF0C2B2D),
         error: accentRed,
         onError: Colors.black,
-        errorContainer: Color(0xFF241010),
+        errorContainer: Color(0xFF351C1C),
         surface: surfaceMid,
         onSurface: textPrimary,
         onSurfaceVariant: textSecondary,
@@ -151,7 +151,7 @@ class AizenTheme {
         surfaceContainerHigh: surfaceHigh,
         surfaceContainerHighest: surfaceHighest,
         outline: hairlineBorder,
-        outlineVariant: Color(0xFF1A1A1A),
+        outlineVariant: Color(0xFF1E3036),
         shadow: Colors.black,
       ),
 

@@ -5,7 +5,7 @@
 > test coverage expansion.
 
 Aizen is a premium, local-first productivity ecosystem for Android. It features
-a strict AMOLED Black canvas (`0xFF000000`), Material 3 Expressive design
+a Koinly-inspired Sleek Dark canvas (`0xFF061012`), Material 3 Expressive design
 language (Inter typography, spring-physics page transitions, pill-shaped
 navigation indicators), native Android scroll physics, tactile haptic feedback
 on every interactive surface, and a feature-first clean architecture.
@@ -42,8 +42,8 @@ Full documentation index: [docs/README.md](docs/README.md)
 ## 🎨 Design System
 
 ### M3 Expressive Theme (`lib/core/theme/aizen_theme.dart`)
-- **AMOLED Black** canvas (`#000000`) with M3 dark surface elevation ramp
-- **Color roles**: `primaryPurple` `#7C4DFF` · `accentGreen` · `accentCyan` · `accentAmber` · `accentRed`
+- **Sleek Dark** canvas (`#061012`) with custom surface elevation ramp
+- **Color roles**: `primaryPurple` (Sleek Cyan `#00C7D8`) · `accentGreen` · `accentCyan` · `accentAmber` · `accentRed`
 - **Shape tokens**: `shapeXs=6` `shapeSm=10` `shapeMd=16` `shapeLg=24` `shapeXl=32` `shapeFull=100`
 - **Spring-physics page transitions** — fade + 3% slide-up + scale from 0.97 on `easeOutCubic`
 - **Motion constants**: `motionShort=200ms` `motionMedium=350ms` `motionLong=500ms`
@@ -133,7 +133,8 @@ GitHub Actions (`.github/workflows/`) runs on every push to `main`:
 ### 7. Expense & Bill Pay (v1.6.0)
 - Command-driven entry: `50 #lunch`, `-20 #refund note`
 - Persistent bill reminders with daily notifications
-- Ledger + Bills tabbed view, swipe-to-delete
+- Ledger + Analytics + Bills tabbed view, swipe-to-delete
+- Koinly-inspired category spending breakdown and metrics
 - Docs: [docs/features/expense_tracker.md](docs/features/expense_tracker.md)
 
 ### 8. Clipboard Vault (v1.6.0)
