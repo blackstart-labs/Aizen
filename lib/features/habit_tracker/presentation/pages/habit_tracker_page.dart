@@ -7,6 +7,7 @@ import '../bloc/habit_state.dart';
 import '../widgets/habit_card.dart';
 import '../widgets/motivation_ticker.dart';
 import '../widgets/add_habit_bottom_sheet.dart';
+import '../../../../core/theme/aizen_theme.dart';
 
 class HabitTrackerPage extends StatefulWidget {
   const HabitTrackerPage({super.key});
@@ -24,49 +25,51 @@ class _HabitTrackerPageState extends State<HabitTrackerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final edgePadding = AizenBreakpoints.horizontalPadding(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AizenTheme.amoledBlack,
       drawer: const NavigationHubDrawer(),
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AizenTheme.amoledBlack,
         elevation: 0,
         leading: Builder(
           builder: (context) {
             return IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white, size: 20),
+              icon: const Icon(Icons.menu, color: AizenTheme.textPrimary, size: 20),
               onPressed: () {
+                AizenHaptics.selection();
                 Scaffold.of(context).openDrawer();
               },
             );
           },
         ),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.track_changes,
-              color: Color(0xFF7C4DFF),
+              color: AizenTheme.primaryPurple,
               size: 20,
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
               'HABIT BUILDER',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5,
+                  ),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF7C4DFF),
+        backgroundColor: AizenTheme.primaryPurple,
         foregroundColor: Colors.black,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AizenTheme.shapeMd),
         ),
         onPressed: () {
+          AizenHaptics.light();
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
@@ -89,9 +92,9 @@ class _HabitTrackerPageState extends State<HabitTrackerPage> {
         child: Column(
           children: [
             // Motivation Quote Ticker
-            const Padding(
-              padding: EdgeInsets.fromLTRB(12, 8, 12, 8),
-              child: MotivationTicker(),
+            Padding(
+              padding: EdgeInsets.fromLTRB(edgePadding, 8, edgePadding, 8),
+              child: const MotivationTicker(),
             ),
 
             // Habits List
@@ -101,7 +104,7 @@ class _HabitTrackerPageState extends State<HabitTrackerPage> {
                   if (state.status == HabitStatus.loading) {
                     return const Center(
                       child: CircularProgressIndicator(
-                        color: Color(0xFF7C4DFF),
+                        color: AizenTheme.primaryPurple,
                       ),
                     );
                   }
@@ -110,7 +113,9 @@ class _HabitTrackerPageState extends State<HabitTrackerPage> {
                     return Center(
                       child: Text(
                         'ERROR LOADING LEDGER:\n${state.errorMessage}',
-                        style: const TextStyle(color: Color(0xFFFF5252), fontSize: 11),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AizenTheme.accentRed,
+                            ),
                         textAlign: TextAlign.center,
                       ),
                     );
@@ -124,26 +129,23 @@ class _HabitTrackerPageState extends State<HabitTrackerPage> {
                         children: [
                           Icon(
                             Icons.track_changes,
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: AizenTheme.textPrimary.withValues(alpha: 0.1),
                             size: 64,
                           ),
                           const SizedBox(height: 16),
                           Text(
                             'NO STREAK TRACKERS ACTIVE',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.4),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                            ),
+                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                  color: AizenTheme.textSecondary,
+                                  letterSpacing: 1.2,
+                                ),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             'Tap the + button below to initiate a habit tracker.',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.25),
-                              fontSize: 11,
-                            ),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AizenTheme.textTertiary,
+                                ),
                           ),
                         ],
                       ),
@@ -151,7 +153,7 @@ class _HabitTrackerPageState extends State<HabitTrackerPage> {
                   }
 
                   return ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: edgePadding, vertical: 8),
                     itemCount: habits.length,
                     separatorBuilder: (context, index) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {

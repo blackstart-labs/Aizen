@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../bloc/stopwatch_state.dart';
+import '../../../../core/theme/aizen_theme.dart';
 
 class ControlButtons extends StatelessWidget {
   final StopwatchStatus status;
@@ -33,8 +34,8 @@ class ControlButtons extends StatelessWidget {
               context: context,
               label: 'START',
               onPressed: onStart,
-              color: const Color(0xFF7C4DFF), // Premium electric violet
-              textColor: Colors.white,
+              color: AizenTheme.primaryPurple,
+              textColor: Colors.black,
               icon: Icons.play_arrow_rounded,
             ),
           ],
@@ -43,8 +44,8 @@ class ControlButtons extends StatelessWidget {
               context: context,
               label: 'LAP',
               onPressed: onLap,
-              color: Colors.white.withValues(alpha: 0.08),
-              textColor: Colors.white.withValues(alpha: 0.9),
+              color: AizenTheme.surfaceHigh,
+              textColor: AizenTheme.textPrimary,
               icon: Icons.flag_outlined,
               isOutlined: true,
             ),
@@ -53,8 +54,8 @@ class ControlButtons extends StatelessWidget {
               context: context,
               label: 'PAUSE',
               onPressed: onPause,
-              color: const Color(0xFFFF5252), // Premium rose/coral
-              textColor: Colors.white,
+              color: AizenTheme.accentRed,
+              textColor: Colors.black,
               icon: Icons.pause_rounded,
             ),
           ],
@@ -63,8 +64,8 @@ class ControlButtons extends StatelessWidget {
               context: context,
               label: 'RESET',
               onPressed: onReset,
-              color: Colors.white.withValues(alpha: 0.08),
-              textColor: const Color(0xFFFF5252),
+              color: AizenTheme.surfaceHigh,
+              textColor: AizenTheme.accentRed,
               icon: Icons.refresh_rounded,
               isOutlined: true,
             ),
@@ -73,7 +74,7 @@ class ControlButtons extends StatelessWidget {
               context: context,
               label: 'RESUME',
               onPressed: onStart,
-              color: const Color(0xFF00E676), // Neon mint/teal
+              color: AizenTheme.accentGreen,
               textColor: Colors.black,
               icon: Icons.play_arrow_rounded,
             ),
@@ -92,41 +93,38 @@ class ControlButtons extends StatelessWidget {
     required IconData icon,
     bool isOutlined = false,
   }) {
-    final style = ButtonStyle(
-      padding: WidgetStateProperty.all(
-        const EdgeInsets.symmetric(vertical: 14),
-      ),
-      backgroundColor: WidgetStateProperty.all(
-        isOutlined ? Colors.transparent : color,
-      ),
-      foregroundColor: WidgetStateProperty.all(textColor),
-      overlayColor: WidgetStateProperty.all(
-        textColor.withValues(alpha: 0.1),
-      ),
-      side: WidgetStateProperty.all(
-        isOutlined
-            ? BorderSide(color: textColor.withValues(alpha: 0.2), width: 1.5)
-            : BorderSide.none,
-      ),
-      shape: WidgetStateProperty.all(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-
     return Expanded(
       child: Container(
         constraints: const BoxConstraints(maxWidth: 160),
-        child: TextButton.icon(
-          onPressed: onPressed,
-          style: style,
-          icon: Icon(icon, size: 18, color: textColor),
-          label: Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.1,
-              fontSize: 12,
-              color: textColor,
+        child: AizenPressable(
+          onTap: () {
+            AizenHaptics.light();
+            onPressed();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              color: isOutlined ? Colors.transparent : color,
+              borderRadius: BorderRadius.circular(AizenTheme.shapeSm),
+              border: isOutlined
+                  ? Border.all(color: textColor.withValues(alpha: 0.2), width: 1.5)
+                  : null,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 18, color: textColor),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.1,
+                    fontSize: 12,
+                    color: textColor,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

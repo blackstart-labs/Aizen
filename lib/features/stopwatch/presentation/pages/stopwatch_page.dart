@@ -7,6 +7,7 @@ import '../widgets/control_buttons.dart';
 import '../widgets/lap_list_panel.dart';
 import '../widgets/stopwatch_timer_display.dart';
 import '../../../navigation_hub/presentation/widgets/navigation_hub_drawer.dart';
+import '../../../../core/theme/aizen_theme.dart';
 
 class StopwatchPage extends StatefulWidget {
   const StopwatchPage({super.key});
@@ -24,38 +25,39 @@ class _StopwatchPageState extends State<StopwatchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final edgePadding = AizenBreakpoints.horizontalPadding(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF000000), // AMOLED Pure Black
+      backgroundColor: AizenTheme.amoledBlack,
       drawer: const NavigationHubDrawer(),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF000000),
+        backgroundColor: AizenTheme.amoledBlack,
         elevation: 0,
         leading: Builder(
           builder: (context) {
             return IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white, size: 20),
+              icon: const Icon(Icons.menu, color: AizenTheme.textPrimary, size: 20),
               onPressed: () {
+                AizenHaptics.selection();
                 Scaffold.of(context).openDrawer();
               },
             );
           },
         ),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.timer_outlined,
-              color: Color(0xFF7C4DFF),
+              color: AizenTheme.primaryPurple,
               size: 20,
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
               'AIZEN STOPWATCH',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5,
+                  ),
             ),
           ],
         ),
@@ -68,12 +70,10 @@ class _StopwatchPageState extends State<StopwatchPage> {
                   child: Center(
                     child: Text(
                       '${state.laps.length} LAPS',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                      ),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: AizenTheme.textSecondary,
+                            letterSpacing: 0.8,
+                          ),
                     ),
                   ),
                 );
@@ -91,9 +91,9 @@ class _StopwatchPageState extends State<StopwatchPage> {
                 SnackBar(
                   content: Text(
                     state.errorMessage!,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: AizenTheme.textPrimary),
                   ),
-                  backgroundColor: const Color(0xFFFF5252),
+                  backgroundColor: AizenTheme.accentRed,
                 ),
               );
             }
@@ -102,7 +102,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
             if (state.status == StopwatchStatus.loading) {
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7C4DFF)),
+                  valueColor: AlwaysStoppedAnimation<Color>(AizenTheme.primaryPurple),
                 ),
               );
             }
@@ -111,9 +111,9 @@ class _StopwatchPageState extends State<StopwatchPage> {
               builder: (context, constraints) {
                 final isWide = constraints.maxWidth >= 720;
                 if (isWide) {
-                  return _buildWideLayout(state);
+                  return _buildWideLayout(state, edgePadding);
                 } else {
-                  return _buildNarrowLayout(state);
+                  return _buildNarrowLayout(state, edgePadding);
                 }
               },
             );
@@ -124,28 +124,28 @@ class _StopwatchPageState extends State<StopwatchPage> {
   }
 
   // Mobile layout
-  Widget _buildNarrowLayout(StopwatchState state) {
+  Widget _buildNarrowLayout(StopwatchState state, double edgePadding) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.symmetric(horizontal: edgePadding, vertical: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Timer card
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(vertical: 36.0, horizontal: 16.0),
             decoration: BoxDecoration(
-              color: const Color(0xFF0C0C0C),
-              borderRadius: BorderRadius.circular(16),
+              color: AizenTheme.surfaceLow,
+              borderRadius: BorderRadius.circular(AizenTheme.shapeMd),
               border: Border.all(
                 color: state.isRunning
-                    ? const Color(0xFF7C4DFF).withValues(alpha: 0.3)
-                    : Colors.white.withValues(alpha: 0.08),
+                    ? AizenTheme.primaryPurple.withValues(alpha: 0.3)
+                    : AizenTheme.hairlineBorder,
                 width: 1,
               ),
               boxShadow: state.isRunning
                   ? [
                       BoxShadow(
-                        color: const Color(0xFF7C4DFF).withValues(alpha: 0.05),
+                        color: AizenTheme.primaryPurple.withValues(alpha: 0.05),
                         blurRadius: 20,
                         spreadRadius: 2,
                       )
@@ -158,16 +158,15 @@ class _StopwatchPageState extends State<StopwatchPage> {
                   baseElapsedTime: state.elapsedTime,
                   startTime: state.startTime,
                   isRunning: state.isRunning,
-                  textStyle: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 48,
-                    fontWeight: FontWeight.w200,
-                    letterSpacing: -1,
-                  ),
+                  textStyle: Theme.of(context).textTheme.displayLarge!.copyWith(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w200,
+                        letterSpacing: -1,
+                      ),
                   milliTextStyle: TextStyle(
                     color: state.isRunning
-                        ? const Color(0xFF7C4DFF)
-                        : Colors.white.withValues(alpha: 0.5),
+                        ? AizenTheme.primaryPurple
+                        : AizenTheme.textSecondary,
                     fontSize: 24,
                     fontWeight: FontWeight.w400,
                   ),
@@ -188,15 +187,15 @@ class _StopwatchPageState extends State<StopwatchPage> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF0C0C0C),
-                borderRadius: BorderRadius.circular(16),
+                color: AizenTheme.surfaceLow,
+                borderRadius: BorderRadius.circular(AizenTheme.shapeMd),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: AizenTheme.hairlineBorder,
                   width: 1,
                 ),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AizenTheme.shapeMd),
                 child: LapListPanel(laps: state.laps),
               ),
             ),
@@ -207,9 +206,9 @@ class _StopwatchPageState extends State<StopwatchPage> {
   }
 
   // Tablet/Desktop layout
-  Widget _buildWideLayout(StopwatchState state) {
+  Widget _buildWideLayout(StopwatchState state, double edgePadding) {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: EdgeInsets.symmetric(horizontal: edgePadding, vertical: 24.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -219,18 +218,18 @@ class _StopwatchPageState extends State<StopwatchPage> {
             child: Container(
               padding: const EdgeInsets.all(32.0),
               decoration: BoxDecoration(
-                color: const Color(0xFF0C0C0C),
-                borderRadius: BorderRadius.circular(16),
+                color: AizenTheme.surfaceLow,
+                borderRadius: BorderRadius.circular(AizenTheme.shapeMd),
                 border: Border.all(
                   color: state.isRunning
-                      ? const Color(0xFF7C4DFF).withValues(alpha: 0.3)
-                      : Colors.white.withValues(alpha: 0.08),
+                      ? AizenTheme.primaryPurple.withValues(alpha: 0.3)
+                      : AizenTheme.hairlineBorder,
                   width: 1,
                 ),
                 boxShadow: state.isRunning
                     ? [
                         BoxShadow(
-                          color: const Color(0xFF7C4DFF).withValues(alpha: 0.05),
+                          color: AizenTheme.primaryPurple.withValues(alpha: 0.05),
                           blurRadius: 20,
                           spreadRadius: 2,
                         )
@@ -245,16 +244,15 @@ class _StopwatchPageState extends State<StopwatchPage> {
                     baseElapsedTime: state.elapsedTime,
                     startTime: state.startTime,
                     isRunning: state.isRunning,
-                    textStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 64,
-                      fontWeight: FontWeight.w200,
-                      letterSpacing: -1.5,
-                    ),
+                    textStyle: Theme.of(context).textTheme.displayLarge!.copyWith(
+                          fontSize: 64,
+                          fontWeight: FontWeight.w200,
+                          letterSpacing: -1.5,
+                        ),
                     milliTextStyle: TextStyle(
                       color: state.isRunning
-                          ? const Color(0xFF7C4DFF)
-                          : Colors.white.withValues(alpha: 0.5),
+                          ? AizenTheme.primaryPurple
+                          : AizenTheme.textSecondary,
                       fontSize: 32,
                       fontWeight: FontWeight.w400,
                     ),
@@ -278,15 +276,15 @@ class _StopwatchPageState extends State<StopwatchPage> {
             flex: 5,
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF0C0C0C),
-                borderRadius: BorderRadius.circular(16),
+                color: AizenTheme.surfaceLow,
+                borderRadius: BorderRadius.circular(AizenTheme.shapeMd),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.08),
+                  color: AizenTheme.hairlineBorder,
                   width: 1,
                 ),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AizenTheme.shapeMd),
                 child: LapListPanel(laps: state.laps),
               ),
             ),
