@@ -303,20 +303,22 @@ class TaskRow extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFF0C0C0C),
               borderRadius: BorderRadius.circular(8),
-              border: Border(
-                left: BorderSide(
-                  color: priorityColor,
-                  width: 3,
-                ),
-                top: BorderSide(color: Colors.white.withValues(alpha: 0.03)),
-                right: BorderSide(color: Colors.white.withValues(alpha: 0.03)),
-                bottom: BorderSide(color: Colors.white.withValues(alpha: 0.03)),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
             ),
             margin: const EdgeInsets.symmetric(vertical: 4.0),
             padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
             child: Row(
               children: [
+                // Priority left edge indicator strip
+                Container(
+                  width: 3,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: priorityColor,
+                    borderRadius: BorderRadius.circular(1.5),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 SizedBox(
                   height: 20,
                   width: 20,
